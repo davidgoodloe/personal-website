@@ -1,0 +1,42 @@
+name: Fortnightly Goodreads refresh
+
+# Triggers a fresh Cloudflare Pages build so scripts/goodreads.mjs re-pulls
+# David's latest "read" shelf and rebuilds the site. The build itself does the
+# fetching; this workflow only pings the Cloudflare Pages "deploy hook" URL on a
+# schedule (and on demand).
+#
+# One-time setup:
+#   1. In the Cloudflare Pages project: Settings -> Builds & deployments ->
+#      Deploy hooks -> create a hook (branch: main). Copy the URL.
+#   2. In this GitHub repo: Settings -> Secrets and variables -> Actions ->
+#      New repository secret, named CF_DEPLOY_HOOK, value = the hook URL.
+#
+# Note: GitHub pauses scheduled workflows after ~60 days with no repo activity;
+# a push (or a manual run below) re-arms it.
+
+on:
+  schedule:
+    # 09:00 UTC on the 1st and 15th of every month (~fortnightly).
+    - cron: '0 9 1,15 * *'
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+jobs:
+  trigger-rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Cloudflare Pages deploy hook
+        env:
+          CF_DEPLOY_HOOK: ${{ secrets.CF_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$CF_DEPLOY_HOOK" ]; then
+            echo "::error::CF_DEPLOY_HOOK secret is not set. Add the Cloudflare Pages deploy-hook URL as a repo secret named CF_DEPLOY_HOOK."
+            exit 1
+          fi
+          echo "Triggering Cloudflare Pages rebuild..."
+          http_code=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$CF_DEPLOY_HOOK")
+          echo "Cloudflare responded with HTTP $http_code"
+          if [ "$http_code" -lt 200 ] || [ "$http_code" -ge 300 ]; then
+            echo "::error::Deploy hook returned HTTP $http_code"
+            exit 1
+          fi
+          echo "Rebuild triggered successfully."
