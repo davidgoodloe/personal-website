@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WorkTile from '../components/WorkTile.astro';
+import MediaItem from '../components/MediaItem.astro';
 
 /*
   Work - a bento grid of projects. Tiles grow on hover and open a larger detail
@@ -99,6 +100,37 @@ const projects = [
     {projects.map((p) => <WorkTile {...p} />)}
   </div>
 
+  {/* Publications - pulled from David's LinkedIn publications section. */}
+  <section class="publications">
+    <h2>Publications</h2>
+    <ul class="media-list">
+      <MediaItem
+        title="Conceptual Design, Manufacturing, and Assembly of a Tall Lunar Tower"
+        href="https://drops.dagstuhl.de/entities/document/10.4230/OASIcs.SpaceCHI.2025.12"
+      >
+        OASIcs - Advancing Human-Computer Interaction for Space Exploration (SpaceCHI 2025) · Sep 21, 2025
+      </MediaItem>
+      <MediaItem
+        title="Systems and Panels for Customized Retrofit of a Building Exterior"
+        href="https://patents.google.com/patent/US12104393B2/en"
+      >
+        US Patent & Trademark Office - US20230243168A1 · Aug 3, 2023
+      </MediaItem>
+      <MediaItem
+        title="Design and Manufacturing of the First Freeform 3D-Printed House"
+        href="https://congress.cimne.com/formandforce2019/frontal/doc/Ebook%20Form%20and%20Force%202019.pdf"
+      >
+        Proceedings of the IASS Annual Symposium 2019 - Structural Membranes 2019 · Aug 1, 2019
+      </MediaItem>
+      <MediaItem
+        title="Morphological Transition in Diamond Thin-Films Induced by Boron in a Microwave Plasma Deposition Process"
+        href="https://pubmed.ncbi.nlm.nih.gov/29135942/"
+      >
+        MDPI Materials · Nov 14, 2017
+      </MediaItem>
+    </ul>
+  </section>
+
   {/* Detail overlay - populated from the clicked tile's data-* attributes */}
   <div class="lb" id="work-lb" hidden>
     <div class="lb-card" role="dialog" aria-modal="true" aria-labelledby="lb-title">
@@ -153,6 +185,18 @@ const projects = [
       grid-template-columns: 1fr;
       grid-auto-rows: 200px;
     }
+  }
+
+  .publications {
+    margin-top: 3rem;
+  }
+  .publications h2 {
+    margin: 0 0 0.5rem;
+  }
+  .media-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
   }
 
   /* ---- detail overlay ---- */
