@@ -1,0 +1,289 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About - David Goodloe">
+  <h1>About</h1>
+
+  <div class="photo-cluster" transition:name="hero-cluster">
+    <img
+      class="pc-lead"
+      src="/about-portrait.jpg"
+      alt="David Goodloe on a mountain summit above an alpine valley"
+      width="900"
+      height="1200"
+    />
+    <div class="pc-sides">
+      <img
+        class="pc-side"
+        src="/about-portrait-2.jpg"
+        alt="David mountaineering on a rocky summit ridge with Mount Baker behind"
+        width="1300"
+        height="1733"
+      />
+      <img
+        class="pc-side"
+        src="/about-portrait-3.jpg"
+        alt="David climbing on coastal rocks above the ocean"
+        width="1300"
+        height="1733"
+      />
+    </div>
+  </div>
+
+  <p class="about-meta">Based in Chattanooga, TN and mountain landscapes around the world. Pictured here in Åndalsnes, Norway, on the summit ridge of Mt. Shuksan, and at the base of the limestone cliffs of Cayman Brac.</p>
+
+  <p>
+    Hi there, and thanks for checking out my personal website! This is something I've long
+    wanted to build, and so it's fun to finally have it up and running. I would consider myself a
+    technical person (I studied physics and mathematics in undergrad), but historically have
+    lacked programming or coding experience, which makes building a website a little bit harder.
+    Now, with the advent of agentic AI and various coding tools, an aspiring web-builder like me
+    can finally bring something to life! And the best part is that in doing so (even with an agent
+    assisting), I've started to learn some things about software myself. So consider this website
+    an exercise of mine to stretch my technical horizons and grow into this era of agentic AI and
+    democratized software-development skills. I hope you'll enjoy learning about the things I'm
+    building, as well as getting a glimpse into some of the other things that spark my interest.
+  </p>
+
+  <p>
+    I'm a former college tennis player, an avid fiction reader, an outdoors (mountaineering, rock
+    climbing, and snowboarding) junkie, and a native Tennessean living in Chattanooga with my
+    wife, Lauren. I have some content on this website dedicated to each of these other facets of
+    my life. Click around, follow the external links, and check out some of the things I'm working on
+    other than my software and AI learnings.
+  </p>
+
+  <p>
+    For the last ~10 years, I've worked at Branch Technology. I'm currently the Director of our
+    business unit focused on digitally-manufactured energy retrofits, and I've also cut my teeth
+    on federally funded research and technology projects across many domains. I love building
+    businesses, exploring product-market-fit, and being on a team pursuing a common goal. If you'd
+    like to check out my resume, too, it's available <a href="/david-goodloe-resume.pdf" target="_blank" rel="noopener noreferrer">here</a>.
+  </p>
+
+  <h2>My Personal &amp; Vocational Values</h2>
+
+  <p>
+    My faith in the saving work of Jesus in my life informs all that I am and do, so I thought I'd
+    spend just a few lines here too on my personal and vocational values. Would love to chat about
+    any of these if you find them interesting.
+  </p>
+
+  <ul class="values">
+    <li>
+      Work is inherently good and is how God most clearly empowers us to participate in his
+      redemptive plan for the world. So I want to do excellent work with an ownership mentality.
+    </li>
+    <li>
+      The skills I've been given to aid in my work are gifts that I must steward well, for their
+      highest and best use. This means both deploying them well and continuing to develop them.
+    </li>
+    <li>
+      Humans are made for community, and will flourish when our relationships are thriving. The
+      family, church, and workplace (among other communities) are simultaneously causes and
+      beneficiaries of this flourishing. Work is a place to jointly pursue something bigger than
+      ourselves.
+    </li>
+  </ul>
+
+  <blockquote class="scripture">
+    Hebrews 12:2 - "[So now, let us] Fix our eyes upon Jesus, the founder and perfecter of our
+    faith, who for the joy that was set before Him, endured the cross and despised the shame, and
+    was seated at the right hand of God."
+  </blockquote>
+
+  <h2 id="contact">Contact</h2>
+
+  <p>I'd love to hear from you if you've made it this far. Please reach out below!</p>
+
+  {/* Posts to a Cloudflare Pages Function (functions/api/contact.js) that emails David
+      via Resend. No email address appears in the page or the repo - the destination and
+      API key are Cloudflare env vars. Works without JS (plain POST); the script below
+      upgrades it to an inline confirmation. data-success = David's confirmation wording. */}
+  <form
+    class="contact-form"
+    method="POST"
+    action="/api/contact"
+    data-success="Thanks, I'll be in touch."
+  >
+    {/* Honeypot - hidden from humans, catches bots. */}
+    <div class="hp" aria-hidden="true">
+      <label>Leave this field empty
+        <input type="text" name="botcheck" tabindex="-1" autocomplete="off" />
+      </label>
+    </div>
+
+    <div class="field">
+      <label for="cf-name">Name</label>
+      <input id="cf-name" name="name" type="text" required autocomplete="name" />
+    </div>
+
+    <div class="field">
+      <label for="cf-email">Email</label>
+      <input id="cf-email" name="email" type="email" required autocomplete="email" />
+    </div>
+
+    <div class="field">
+      <label for="cf-message">Message</label>
+      <textarea id="cf-message" name="message" rows="6" required></textarea>
+    </div>
+
+    <button type="submit">Send message</button>
+    <p class="form-status" role="status" aria-live="polite" hidden></p>
+  </form>
+
+  <h2 class="site-note-title">About this site</h2>
+  <p class="muted site-note">
+    Built with Astro - plain, static HTML and CSS, no tracking or analytics. Hosted on
+    Cloudflare Pages.
+  </p>
+</BaseLayout>
+
+<script>
+  // Progressive enhancement: submit the contact form via fetch and show an inline
+  // status, instead of navigating away. Without JS the plain POST still works.
+  const form = document.querySelector('.contact-form');
+  if (form instanceof HTMLFormElement) {
+    const status = form.querySelector('.form-status');
+    const button = form.querySelector('button[type="submit"]');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (status) status.hidden = true;
+      if (button) button.disabled = true;
+      try {
+        const res = await fetch(form.action, {
+          method: 'POST',
+          headers: { Accept: 'application/json' },
+          body: new FormData(form),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          form.reset();
+          if (status) {
+            status.textContent = form.dataset.success || 'Thanks - your message has been sent.';
+            status.className = 'form-status ok';
+          }
+        } else if (status) {
+          status.textContent = data.error || 'Something went wrong. Please try again.';
+          status.className = 'form-status err';
+        }
+      } catch {
+        if (status) {
+          status.textContent = 'Something went wrong. Please try again.';
+          status.className = 'form-status err';
+        }
+      } finally {
+        if (status) status.hidden = false;
+        if (button) button.disabled = false;
+      }
+    });
+  }
+</script>
+
+<style>
+  /* Tighten the gap between the photo cluster and its caption a touch (About only,
+     so Home's cluster is unaffected). Caption -> body text below stays at 1rem. */
+  .photo-cluster {
+    margin-bottom: 1.15rem;
+  }
+  .about-meta {
+    color: var(--muted);
+    margin-top: 0;
+  }
+  .values {
+    margin: 0 0 1rem;
+    padding-left: 1.15rem;
+  }
+  .values li {
+    margin-bottom: 0.6rem;
+  }
+  .scripture {
+    margin: 1.25rem 0;
+    padding: 0.35rem 0 0.35rem 1rem;
+    border-left: 3px solid var(--accent);
+    color: var(--muted);
+    font-style: italic;
+  }
+  .site-note-title {
+    font-size: 1rem;
+  }
+  .site-note {
+    font-size: 0.9rem;
+    font-style: italic;
+  }
+
+  /* ---- Contact form ---- */
+  .contact-form {
+    margin: 0.5rem 0 0.75rem;
+    max-width: 34rem;
+  }
+  .field {
+    margin-bottom: 1rem;
+  }
+  .field label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+  }
+  .field input,
+  .field textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--fg);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.55rem 0.7rem;
+  }
+  .field textarea {
+    resize: vertical;
+  }
+  .field input:focus-visible,
+  .field textarea:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+    border-color: var(--accent);
+  }
+  .contact-form button {
+    font: inherit;
+    font-weight: 700;
+    color: var(--on-accent);
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    padding: 0.55rem 1.1rem;
+    cursor: pointer;
+  }
+  .contact-form button:hover {
+    background: var(--accent-hover);
+  }
+  .form-status {
+    margin: 0.75rem 0 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .form-status.ok {
+    color: #15803d;
+  }
+  .form-status.err {
+    color: #b91c1c;
+  }
+  @media (prefers-color-scheme: dark) {
+    .form-status.ok {
+      color: #4ade80;
+    }
+    .form-status.err {
+      color: #f87171;
+    }
+  }
+  /* Honeypot: visually and semantically removed, still submitted by bots. */
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>

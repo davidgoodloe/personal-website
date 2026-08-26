@@ -1,0 +1,175 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="David Goodloe">
+  <section class="intro">
+    {/* Name lives in the header wordmark (enlarged on home); keep an h1 for a11y/SEO. */}
+    <h1 class="visually-hidden">David Goodloe</h1>
+
+    <p class="bio-lead">
+      Hi, I'm David. I am a Nashville native who now works and lives in Chattanooga with my
+      wife Lauren. I work at the juncture of technology, scientific research, energy and
+      sustainability, construction, software, and AI. I'm an enthusiastic rock climber,
+      mountaineer, and snowboarder, a washed-up college tennis player rediscovering the sport
+      of his youth, an avid fiction reader, and - alongside Lauren - an aspiring world traveler.
+    </p>
+
+    {/* The whole cluster is one shared element, so all three photos glide together
+        (translate + crossfade) into the About cluster - naming only the lead left the
+        two sides ghosting between the clusters' different vertical positions. */}
+    <div class="photo-cluster" transition:name="hero-cluster">
+      <img
+        class="pc-lead"
+        src="/home-portrait.jpg"
+        alt="David and Lauren at a mountain overlook above a valley"
+        width="1300"
+        height="1733"
+      />
+      <div class="pc-sides">
+        <img
+          class="pc-side"
+          src="/home-portrait-2.jpg"
+          alt="David and Lauren on a snowy mountain summit"
+          width="1300"
+          height="979"
+        />
+        <img
+          class="pc-side"
+          src="/home-portrait-3.jpg"
+          alt="David and Lauren rock climbing on a cliff"
+          width="1300"
+          height="1733"
+        />
+      </div>
+    </div>
+  </section>
+
+  <section class="currently">
+    <h2>Currently</h2>
+    <ul class="currently-list">
+      <li><span class="c-label">Working</span> - at <a href="https://branchtechnology.com/" target="_blank" rel="noopener noreferrer">Branch Technology</a></li>
+      <li><span class="c-label">Learning</span> - <a href="https://kodekloud.com/learning-path/kubernetes" target="_blank" rel="noopener noreferrer">Agentic AI, DevOps, K8s</a></li>
+      <li><span class="c-label">Building</span> - <a href="https://southernalpinist.com/" target="_blank" rel="noopener noreferrer">Southern Alpinist</a></li>
+      <li><span class="c-label">Reading</span> - <a href="https://www.goodreads.com/book/show/222685709-shadows-upon-time" target="_blank" rel="noopener noreferrer">Shadows Upon Time</a></li>
+      <li><span class="c-label">Competing</span> - <a href="https://app.utrsports.net/events/386332" target="_blank" rel="noopener noreferrer">Chattanooga UTR Flex League</a></li>
+      <li><span class="c-label">Climbing</span> - <a href="https://www.mountainproject.com/route/113873272/dalai-lama" target="_blank" rel="noopener noreferrer">Dalai Lama, 5.12c</a></li>
+    </ul>
+  </section>
+
+  <section class="find-me">
+    <h2>Where you can find me</h2>
+    <ul class="social">
+      <li>
+        <a href="https://www.linkedin.com/in/david--goodloe/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><span class="ico ico-linkedin"></span></a>
+      </li>
+      <li>
+        <a href="https://github.com/davidgoodloe" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"><span class="ico ico-github"></span></a>
+      </li>
+      <li>
+        <a href="https://www.goodreads.com/user/show/203579059-david-goodloe" target="_blank" rel="noopener noreferrer" aria-label="Goodreads" title="Goodreads"><span class="ico ico-goodreads"></span></a>
+      </li>
+      <li>
+        <a href="https://southernalpinist.com/" target="_blank" rel="noopener noreferrer" aria-label="Southern Alpinist" title="Southern Alpinist"><span class="ico ico-sa"></span></a>
+      </li>
+      <li>
+        <a href="https://www.mountainproject.com/user/201008756/david-goodloe" target="_blank" rel="noopener noreferrer" aria-label="Mountain Project" title="Mountain Project"><img class="ico-img" src="/icons/mountainproject.png" alt="" width="22" height="22" /></a>
+      </li>
+      <li>
+        <a href="https://www.8a.nu/user/david-goodloe/sportclimbing" target="_blank" rel="noopener noreferrer" aria-label="8a.nu" title="8a.nu"><img class="ico-img" src="/icons/8anu.png" alt="" height="22" /></a>
+      </li>
+      <li>
+        <a href="https://app.utrsports.net/profiles/120574" target="_blank" rel="noopener noreferrer" aria-label="UTR" title="UTR"><span class="ico ico-utr"></span></a>
+      </li>
+    </ul>
+    <p class="email-link"><a href="/about#contact">Email</a></p>
+    <p class="resume-link"><a href="/david-goodloe-resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a></p>
+  </section>
+</BaseLayout>
+
+<style>
+  .bio-lead {
+    font-size: 1.2rem;
+    line-height: 1.55;
+    margin-top: 0;
+  }
+  .currently-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .currently-list li {
+    margin: 0.4rem 0;
+  }
+  .c-label {
+    font-weight: 600;
+    color: var(--fg);
+  }
+  .social {
+    list-style: none;
+    padding: 0;
+    margin: 0.25rem 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.1rem;
+  }
+  .social a {
+    display: inline-flex;
+    align-items: center;
+    color: var(--muted);
+  }
+  .social a:hover {
+    color: var(--fg);
+    text-decoration: none;
+  }
+  .social .ico {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    background-color: currentColor;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+  }
+  .ico-linkedin {
+    -webkit-mask-image: url(/icons/linkedin.svg);
+    mask-image: url(/icons/linkedin.svg);
+  }
+  .ico-github {
+    -webkit-mask-image: url(/icons/github.svg);
+    mask-image: url(/icons/github.svg);
+  }
+  .ico-goodreads {
+    -webkit-mask-image: url(/icons/goodreads.svg);
+    mask-image: url(/icons/goodreads.svg);
+  }
+  .ico-utr {
+    -webkit-mask-image: url(/icons/utr.svg);
+    mask-image: url(/icons/utr.svg);
+  }
+  .ico-sa {
+    -webkit-mask-image: url(/icons/southern-alpinist.png);
+    mask-image: url(/icons/southern-alpinist.png);
+    width: 26px;
+  }
+  .social .ico-img {
+    height: 22px;
+    width: auto;
+    border-radius: 4px;
+    display: block;
+  }
+  .social .text-link {
+    font-size: 0.95rem;
+  }
+  .email-link {
+    margin-top: 1.25rem;
+    margin-bottom: 0;
+  }
+  .resume-link {
+    margin: 0.4rem 0 0;
+  }
+</style>

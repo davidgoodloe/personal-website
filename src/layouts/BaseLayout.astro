@@ -1,0 +1,117 @@
+---
+import '../styles/global.css';
+import EditMode from '../components/EditMode.astro';
+import { ClientRouter, fade } from 'astro:transitions';
+
+interface Props {
+  title?: string;
+  description?: string;
+  wide?: boolean;
+}
+
+const { title = 'David Goodloe', description, wide = false } = Astro.props;
+
+// Normalize path (strip trailing slash) for active-nav matching.
+const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
+
+const nav = [
+  { href: '/', label: 'Home' },
+  { href: '/work', label: 'Work' },
+  { href: '/adventure', label: 'Adventure' },
+  { href: '/learning', label: 'Learning' },
+  { href: '/about', label: 'About' },
+];
+
+const isActive = (href: string) =>
+  href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
+
+// "Keep exploring" loops through the nav in order (Home -> Work -> ... -> About -> Home).
+const currentIndex = nav.findIndex((n) => isActive(n.href));
+const nextPage = currentIndex >= 0 ? nav[(currentIndex + 1) % nav.length] : null;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap"
+    />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {
+      /* Home is the entry to the Home<->About portrait morph. Prefetch the About
+         cluster images here (low priority) so the two side photos are already cached
+         when the user navigates in - otherwise they pop in a beat after the lead
+         morphs. */
+      path === '/' && (
+        <>
+          <link rel="prefetch" as="image" href="/about-portrait.jpg" />
+          <link rel="prefetch" as="image" href="/about-portrait-2.jpg" />
+          <link rel="prefetch" as="image" href="/about-portrait-3.jpg" />
+        </>
+      )
+    }
+    <ClientRouter />
+  </head>
+  <body>
+    <div class:list={['site', { wide }]}>
+      <header class="site-header" transition:persist>
+        <a class:list={['home-link', { 'home-large': path === '/' }]} href="/">David Goodloe</a>
+        <nav class="nav" aria-label="Primary">
+          {
+            nav.map((item) => (
+              <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </header>
+
+      <main transition:animate={fade({ duration: '0.25s' })}>
+        <slot />
+        {
+          nextPage && (
+            <a class="page-next" href={nextPage.href} aria-label={`Keep exploring: ${nextPage.label}`}>
+              <span class="page-next-label">Keep exploring</span>
+              <span class="page-next-target">
+                {nextPage.label}
+                <span class="page-next-arrow" aria-hidden="true">&rarr;</span>
+              </span>
+            </a>
+          )
+        }
+      </main>
+
+      <footer class="site-footer">
+        <span>&copy; {new Date().getFullYear()} David Goodloe</span>
+        <span><a href="/">Home</a></span>
+      </footer>
+    </div>
+    {import.meta.env.DEV && <EditMode />}
+    <script>
+      // The header persists across view transitions, so its server-rendered
+      // aria-current goes stale - refresh the active nav link on every navigation.
+      const updateActiveNav = () => {
+        const path = location.pathname.replace(/\/+$/, '') || '/';
+        document.querySelectorAll('.nav a').forEach((a) => {
+          const href = a.getAttribute('href') || '';
+          const active = href === '/' ? path === '/' : path === href || path.startsWith(href + '/');
+          if (active) a.setAttribute('aria-current', 'page');
+          else a.removeAttribute('aria-current');
+        });
+        // Enlarge the header wordmark on the home page only (the persisted header's
+        // server-rendered class goes stale after a client-side navigation).
+        const home = document.querySelector('.home-link');
+        if (home) home.classList.toggle('home-large', path === '/');
+      };
+      document.addEventListener('astro:page-load', updateActiveNav);
+    </script>
+  </body>
+</html>

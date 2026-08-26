@@ -1,0 +1,418 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WorkTile from '../components/WorkTile.astro';
+
+/*
+  Work - a bento grid of projects. Tiles grow on hover and open a larger detail
+  view on click. Charcoal + gold, warm humanist type, photos carry the color.
+
+  COPY IS DAVID'S TO EDIT. The titles are real; the one-line descriptions are my
+  placeholder drafts from your resume/LinkedIn - reword them in your voice. No
+  invented facts. Photos live in public/work/ (optimized, metadata stripped).
+*/
+
+const projects = [
+  {
+    title: '3D-printing lunar structures for NASA',
+    tag: 'Space',
+    domain: 'space',
+    images: [
+      { src: '/work/lunar.jpg', alt: '3D-printed lunar solar tower render on the Moon' },
+      { src: '/work/nasa-2.jpg', alt: 'Scale model of the lunar tower exhibited at the Kennedy Center' },
+      { src: '/work/nasa-3.jpg', alt: 'Structural render of the lunar tower lattice from the project video' },
+      { src: '/work/nasa-4.jpg', alt: 'David standing beside the full-scale 3D-printed lattice tower in the workshop', fit: 'contain' },
+      { src: '/work/nasa-5.jpg', alt: 'Close-up of the woven 3D-printed lattice structure' },
+      { src: '/work/nasa-6.jpg', alt: 'Tall Lunar Tower Phase II proposal overview - NASA, Branch Technology, and Foster + Partners', fit: 'contain' },
+    ],
+    desc: 'Principal Investigator on multiple NASA lunar 3D-printing construction projects, including a prototype for a 50-meter solar tower for the lunar south pole and a 3D printed habitat prototype.\n\nI led and guided the collaboration between Branch Technology, NASA, and world-renowned architecture firm, Foster + Partners.\n\nOur team produced exhibits that showed the prototypes, both at Branch Technology HQ in Chattanooga, TN, as well as a globally-viewed, month-long exhibit at the Kennedy Center in Washington DC.',
+    // feature: true,  // dormant - grid is currently all-even (David's call). Re-add to feature a tile.
+  },
+  {
+    title: 'BranchRegenerate™',
+    tag: 'Buildings',
+    domain: 'build',
+    images: [
+      { src: '/work/retrofit.jpg', alt: 'BranchRegenerate insulating panels being installed on a building' },
+      { src: '/work/retrofit-2.jpg', alt: 'The team at a full-scale BranchRegenerate retrofit demonstration' },
+      { src: '/work/retrofit-3.jpg', alt: 'Close-up of the 3D-printed insulating retrofit panels staged for installation' },
+      { src: '/work/retrofit-4.jpg', alt: '3D model of a building complex captured for a retrofit scan' },
+      { src: '/work/retrofit-5.jpg', alt: 'A single-story building slated for an energy-efficiency retrofit' },
+      { src: '/work/retrofit-6.jpg', alt: 'Concept render of a building half in original brick, half reclad with BranchRegenerate panels' },
+    ],
+    desc: 'A 3D-printed energy-efficient retrofit panel system whose backplane geometry mirrors the substrate surface, defined by a scan and then modeled and printed into the insulation.\n\n<a href="https://patents.google.com/patent/US12104393B2/en?q=(david+goodloe)" target="_blank" rel="noopener noreferrer">Patented the concept</a>, developed the technology, deployed the product, and am currently building the business unit as Director within Branch Technology',
+  },
+  {
+    title: 'Advanced Concepts Team',
+    tag: 'R&D',
+    domain: 'rnd',
+    images: [
+      { src: '/work/robots.jpg', alt: 'Robotic 3D-printing cell extruding a freeform lattice' },
+    ],
+    desc: "I founded and led this internal R&D group within Branch Technology, focused on securing and executing on federally funded technology development projects to apply Cellular Fabrication (C-Fab®) to a variety of challenges and applications. I've secured and delivered $15M in projects with several organizations:\n\n- National Science Foundation (NSF)\n- US Air Force (USAF)\n- National Aeronautics and Space Administration (NASA)\n- US Army\n- Department of Defense (DoD / DoW) ESTCP\n- LaunchTN",
+  },
+  {
+    title: 'BioWall',
+    tag: 'Materials',
+    domain: 'mat',
+    images: [
+      { src: '/work/biowall.jpg', alt: 'Bio-derived 3D-printed wall lattice on display' },
+      { src: '/work/biowall-2.jpg', alt: 'Detail of the bio-derived 3D-printed wall panels' },
+      { src: '/work/biowall-3.jpg', alt: 'Bio-based foam and lattice panels during fabrication' },
+    ],
+    desc: 'Served as principal investigator for the development of a sustainable exterior wall system 3D-printed entirely from bio-derived materials for a $1.9M Army Construction Innovation program. Executed R&D license for plant-based foam formulation from Oak Ridge National Lab.',
+  },
+  {
+    title: 'Funding-intelligence agent',
+    tag: 'Software',
+    domain: 'soft',
+    images: [
+      { src: '/work/funding-arch.jpg', alt: 'System diagram of the funding-intelligence agent: trigger, collect six federal sources, filter and rank, synthesize, deliver' },
+      { src: '/work/ai.jpg', alt: 'Weekly funding-intelligence report generated by the agent' },
+    ],
+    desc: 'An agent that scans federal databases for open funding and technology development solicitations, ranks opportunities with Claude based on a custom-configured profile, and emails me a twice-weekly brief.',
+  },
+  {
+    title: 'Daily AI news brief',
+    tag: 'Software',
+    domain: 'soft',
+    images: [
+      { src: '/work/ai-arch.jpg', alt: 'System architecture diagram of the AI news brief pipeline' },
+      { src: '/work/ai2.jpg', alt: 'Daily AI news brief email in the inbox' },
+    ],
+    // NOTE: "HERE" currently points to a TEMPORARY placeholder page (public/work/ai-brief-signup.html).
+    // Swap that href for the real sign-up URL once it exists.
+    desc: "A fully automated AI news brief that lands in my inbox at 7am every morning without me lifting a finger. A Claude Code routine runs in the cloud on a cron, researches the last day or two of AI news with live web search, writes a <a href='/work/ai-brief-sample.html' target='_blank' rel='noopener noreferrer'>5-7 minute read</a> organized around my interests, compares and deduplicates it against the previous days' briefs so nothing repeats, then commits and pushes the file to a GitHub repo.\n\nBut the routine's sandbox is network-locked and can't actually send mail, so the git push trips a GitHub Action running on open network that renders the markdown to HTML and sends it through Resend's API to my email. All the editorial rules live in a CLAUDE.md that the routine reads fresh on every run, so tweaking what it covers, how it writes, and who it addresses is just a matter of editing that one file.\n\nIn fact, if you'd like to sign up for it and stay up to date on the latest in AI, click <a href='/work/ai-brief-signup.html' target='_blank' rel='noopener noreferrer'>HERE</a>! :)",
+  },
+];
+---
+
+<BaseLayout title="Work - David Goodloe">
+  <div class="work-head">
+    <p class="eyebrow">Work</p>
+    <h1>Products, projects, and tools I've built</h1>
+    <p class="lede">
+      Spanning a variety of industries, applications, and technologies
+    </p>
+  </div>
+
+  <div class="grid">
+    {projects.map((p) => <WorkTile {...p} />)}
+  </div>
+
+  {/* Detail overlay - populated from the clicked tile's data-* attributes */}
+  <div class="lb" id="work-lb" hidden>
+    <div class="lb-card" role="dialog" aria-modal="true" aria-labelledby="lb-title">
+      <button class="lb-close" id="lb-close" type="button" aria-label="Close">&times;</button>
+      <div class="lb-media">
+        <img id="lb-img" src="" alt="" />
+        <button class="lb-nav lb-prev" id="lb-prev" type="button" aria-label="Previous image">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+        <button class="lb-nav lb-next" id="lb-next" type="button" aria-label="Next image">
+          <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        </button>
+        <div class="lb-count" id="lb-count" hidden></div>
+      </div>
+      <div class="lb-body">
+        <span class="tag" id="lb-tag"><span class="dot"></span><span id="lb-tagtext"></span></span>
+        <h2 id="lb-title"></h2>
+        <p id="lb-desc"></p>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  .work-head {
+    max-width: var(--measure);
+    margin-bottom: 1.6rem;
+  }
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 700;
+    margin: 0 0 0.45rem;
+  }
+  .work-head h1 {
+    margin: 0 0 0.5rem;
+  }
+  .work-head .lede {
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 190px;
+    gap: 14px;
+  }
+  @media (max-width: 32rem) {
+    .grid {
+      grid-template-columns: 1fr;
+      grid-auto-rows: 200px;
+    }
+  }
+
+  /* ---- detail overlay ---- */
+  .lb {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 8, 6, 0.66);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    z-index: 50;
+  }
+  .lb[hidden] {
+    display: none;
+  }
+  .lb-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+    color: var(--fg);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 46rem;
+    width: 100%;
+    max-height: 88vh;
+    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+    animation: lb-pop 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  @keyframes lb-pop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .lb-media {
+    position: relative;
+    flex: 0 0 auto;
+    background: #0b0a08; /* letterbox backdrop for images shown with object-fit: contain */
+  }
+  .lb-media img {
+    width: 100%;
+    max-height: 44vh;
+    object-fit: cover;
+    display: block;
+  }
+  /* carousel controls */
+  .lb-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(92, 92, 96, 0.5);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .lb-nav:hover { background: rgba(92, 92, 96, 0.75); }
+  .lb-nav:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .lb-prev { left: 0.75rem; }
+  .lb-next { right: 0.75rem; }
+  .lb-nav[hidden] { display: none; }
+  .lb-count {
+    position: absolute;
+    bottom: 0.6rem;
+    right: 0.75rem;
+    background: rgba(20, 16, 12, 0.6);
+    color: #fff;
+    font-size: 0.72rem;
+    letter-spacing: 0.02em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+  .lb-count[hidden] { display: none; }
+  .lb-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;       /* long descriptions scroll here */
+    padding: 1.3rem 1.5rem 1.6rem;
+  }
+  .lb-body h2 {
+    margin: 0.15rem 0 0.5rem;
+  }
+  .lb-body p {
+    margin: 0;
+    color: var(--fg);
+    white-space: pre-line; /* preserve author's paragraph breaks in the description */
+  }
+  .lb-body a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .lb-body a:hover {
+    color: var(--accent-hover);
+  }
+  .lb-body .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.68rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--muted);
+  }
+  .lb-body .tag .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .lb-close {
+    position: absolute;
+    top: 0.9rem;
+    right: 1rem;
+    z-index: 3; /* keep above the media image, which paints later in the DOM */
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(10, 8, 6, 0.55);
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .lb-close:hover {
+    background: rgba(10, 8, 6, 0.75);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .lb-card { animation: none; }
+  }
+</style>
+
+<script>
+  // Re-init on every view-transition navigation (astro:page-load), since the lightbox
+  // markup is swapped in fresh each time. Element listeners bind to the new nodes;
+  // the one document-level keydown is added a single time and reads the current refs.
+  let lb: HTMLElement | null = null;
+  let img: HTMLImageElement | null = null;
+  let title: HTMLElement | null = null;
+  let desc: HTMLElement | null = null;
+  let tagText: HTMLElement | null = null;
+  let dot: HTMLElement | null = null;
+  let prevBtn: HTMLElement | null = null;
+  let nextBtn: HTMLElement | null = null;
+  let countEl: HTMLElement | null = null;
+  let lastFocused: HTMLElement | null = null;
+  let imgs: { src: string; alt: string; fit?: string }[] = [];
+  let idx = 0;
+  let renderToken = 0; // guards against a slow image decode applying after a newer step
+
+  const render = () => {
+    const cur = imgs[idx];
+    // Controls update immediately; the image swaps atomically once decoded.
+    const many = imgs.length > 1;
+    if (prevBtn) prevBtn.hidden = !many;
+    if (nextBtn) nextBtn.hidden = !many;
+    if (countEl) {
+      countEl.hidden = !many;
+      countEl.textContent = `${idx + 1} / ${imgs.length}`;
+    }
+    if (img && cur) {
+      // Apply src + fit together only after the incoming image is decoded, so we never
+      // show the previous image under the new fit (a flash when stepping between a
+      // `contain` and a `cover` slide). Cached images resolve immediately, so it stays snappy.
+      const image = img;
+      const token = ++renderToken;
+      const apply = () => {
+        if (token !== renderToken) return; // a newer step superseded this one
+        image.src = cur.src;
+        image.alt = cur.alt || '';
+        image.style.objectFit = cur.fit || 'cover';
+      };
+      const loader = new Image();
+      loader.src = cur.src;
+      if (loader.decode) loader.decode().then(apply, apply);
+      else if (loader.complete) apply();
+      else {
+        loader.onload = apply;
+        loader.onerror = apply;
+      }
+    }
+  };
+  const step = (d: number) => {
+    if (imgs.length < 2) return;
+    idx = (idx + d + imgs.length) % imgs.length;
+    render();
+  };
+  const open = (tile: HTMLElement) => {
+    if (!lb) return;
+    try {
+      imgs = JSON.parse(tile.dataset.images || '[]');
+    } catch {
+      imgs = [];
+    }
+    idx = 0;
+    render();
+    if (title) title.textContent = tile.dataset.title || '';
+    // Descriptions may contain author-written markup (e.g. a link); render as HTML.
+    if (desc) desc.innerHTML = tile.dataset.desc || '';
+    if (tagText) tagText.textContent = tile.dataset.tag || '';
+    if (dot) dot.style.background = tile.dataset.color || '';
+    lastFocused = tile;
+    lb.hidden = false;
+    const closeBtn = document.getElementById('lb-close');
+    if (closeBtn instanceof HTMLElement) closeBtn.focus();
+  };
+  const close = () => {
+    if (lb) lb.hidden = true;
+    if (lastFocused) lastFocused.focus();
+  };
+  const editing = () => document.body.classList.contains('ce-editing');
+
+  const init = () => {
+    lb = document.getElementById('work-lb');
+    if (!lb) return;
+    img = document.getElementById('lb-img') as HTMLImageElement | null;
+    title = document.getElementById('lb-title');
+    desc = document.getElementById('lb-desc');
+    tagText = document.getElementById('lb-tagtext');
+    dot = lb.querySelector('.dot') as HTMLElement | null;
+    prevBtn = document.getElementById('lb-prev');
+    nextBtn = document.getElementById('lb-next');
+    countEl = document.getElementById('lb-count');
+    lastFocused = null;
+    imgs = [];
+    idx = 0;
+    document.querySelectorAll<HTMLElement>('.tile').forEach((tile) => {
+      tile.addEventListener('click', () => {
+        if (!editing()) open(tile); // skip while the in-place editor is active
+      });
+      tile.addEventListener('keydown', (e) => {
+        if (editing()) return;
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          open(tile);
+        }
+      });
+    });
+    prevBtn?.addEventListener('click', () => step(-1));
+    nextBtn?.addEventListener('click', () => step(1));
+    document.getElementById('lb-close')?.addEventListener('click', close);
+    lb.addEventListener('click', (e) => {
+      if (e.target === lb) close();
+    });
+  };
+
+  // Added once (module executes once); reads the current refs that init() refreshes.
+  document.addEventListener('keydown', (e) => {
+    if (!lb || lb.hidden) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowLeft') step(-1);
+    else if (e.key === 'ArrowRight') step(1);
+  });
+  document.addEventListener('astro:page-load', init);
+</script>

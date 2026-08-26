@@ -1,0 +1,71 @@
+---
+/**
+ * A compact reference-list entry for a publication, talk, video, or other
+ * external piece. Lighter than <ProjectCard>: a linked title, a short meta
+ * line (type / venue / date), and an optional one-sentence note in the slot.
+ *
+ * Usage:
+ *   <MediaItem title="..." href="..." type="Talk" venue="ACM" date="2024">
+ *     Optional one-sentence note (or omit the slot entirely).
+ *   </MediaItem>
+ */
+interface Props {
+  title: string;
+  href?: string;
+  type?: string;   // e.g. "Publication", "Talk", "Video"
+  venue?: string;  // e.g. "Journal X", "PyCon", "YouTube"
+  date?: string;   // e.g. "2024"
+}
+const { title, href, type, venue, date } = Astro.props;
+const meta = [type, venue, date].filter(Boolean).join(' · ');
+---
+
+<li class="media-item">
+  <span class="media-head">
+    {href ? (
+      <a class="media-title" href={href} target="_blank" rel="noopener noreferrer">{title}</a>
+    ) : (
+      <span class="media-title">{title}</span>
+    )}
+    {meta && <span class="media-meta muted">{meta}</span>}
+  </span>
+  <div class="media-note"><slot /></div>
+</li>
+
+<style>
+  .media-item {
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--border);
+  }
+  .media-item:first-child {
+    border-top: none;
+    padding-top: 0.25rem;
+  }
+  .media-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.35rem 0.75rem;
+  }
+  .media-title {
+    font-weight: 600;
+  }
+  .media-meta {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  /* Collapse the note wrapper when the slot is empty. */
+  .media-note:empty {
+    display: none;
+  }
+  .media-note {
+    margin-top: 0.25rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .media-note :global(p) {
+    margin: 0;
+  }
+</style>

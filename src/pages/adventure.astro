@@ -1,0 +1,93 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import CountryMap from '../components/CountryMap.astro';
+import FilmStrip from '../components/FilmStrip.astro';
+
+// Adventure photos (optimized, GPS/metadata stripped) in public/adventure/.
+// Curated + ordered to avoid similar-looking neighbors (see .tmp-optimize-adventure
+// selection when regenerating). Alt text is generic; David can supply descriptions.
+const travelPhotos = Array.from({ length: 14 }, (_, i) => ({
+  src: `/adventure/travel-${i + 1}.jpg`,
+  alt: `Travel photo ${i + 1}`,
+}));
+const climbingPhotos = Array.from({ length: 16 }, (_, i) => ({
+  src: `/adventure/climbing-${i + 1}.jpg`,
+  alt: `Climbing and mountaineering photo ${i + 1}`,
+}));
+const snowboardingPhotos = Array.from({ length: 16 }, (_, i) => ({
+  src: `/adventure/snowboarding-${i + 1}.jpg`,
+  alt: `Snowboarding photo ${i + 1}`,
+}));
+---
+
+<BaseLayout title="Adventure - David Goodloe">
+  <h1>Adventure</h1>
+
+  <p class="lede">I love finding myself in "improbable places". And (ask anyone who's traveled with me) I usually say that phrase aloud when I'm in a spot where that idea strikes me. Whether I'm 500-ft off the ground on a cliff ledge that only a handful of humans have ever stood on before, or in an off-the-beaten-path restaurant in a small town in a foreign country, these are the kinds of places and experiences that bring me joy.</p>
+
+  {/* Interactive map. Travel + Climbing = shaded countries (world map). Mountaineering +
+      Snowboarding = destination dots on a detailed US map. Mountaineering status: summit
+      (green) or attempt (yellow). */}
+  <CountryMap
+    visited={["us", "pr", "bs", "es", "gb", "gr", "cz", "fr", "nl", "mx", "au", "br", "no"]}
+    climbed={["us", "mx", "br", "no"]}
+    mountaineering={[
+      { name: "Mount Baker", lat: 48.7767, lng: -121.8144, status: "summit", nudge: [18, 16] },
+      { name: "Mount Shuksan", lat: 48.8306, lng: -121.6022, status: "summit" },
+      { name: "Mount Olympus", lat: 47.8014, lng: -123.7065, status: "summit", nudge: [12, 0] },
+      { name: "Mount Rainier", lat: 46.8523, lng: -121.7603, status: "attempt" },
+      { name: "Midsummer Dome, WY", lat: 42.77, lng: -109.21, status: "summit" },
+    ]}
+    snowboarding={[
+      { name: "Sugar Mountain, NC", lat: 36.1329, lng: -81.8637 },
+      { name: "Beech Mountain, NC", lat: 36.2019, lng: -81.8873 },
+      { name: "Appalachian Ski Mtn, NC", lat: 36.1586, lng: -81.6936 },
+      { name: "Cataloochee, NC", lat: 35.5945, lng: -83.0876 },
+      { name: "Wolf Ridge, NC", lat: 35.9758, lng: -82.6361 },
+      { name: "Snowshoe Mountain, WV", lat: 38.4121, lng: -79.9953 },
+      { name: "Copper Mountain, CO", lat: 39.5022, lng: -106.1517 },
+      { name: "Keystone, CO", lat: 39.6084, lng: -105.9437 },
+      { name: "Breckenridge, CO", lat: 39.4783, lng: -106.0667 },
+      { name: "Vail, CO", lat: 39.6061, lng: -106.355 },
+      { name: "Beaver Creek, CO", lat: 39.6042, lng: -106.5165 },
+      { name: "Bridger Bowl, MT", lat: 45.8179, lng: -110.9066 },
+    ]}
+  />
+
+  <h2>Travel</h2>
+  <p>
+    I want to see and visit as much of the world as possible in this life. I'm no
+    van-life nomad or jet-setting freelancer (at least not yet ;)). But hopefully this
+    page is proof that you can hold down a full-time job in a home-base city and still
+    get out there in the world.
+  </p>
+  <p>
+    14 and counting!
+  </p>
+  <FilmStrip images={travelPhotos} label="Travel photos" />
+
+  <h2>Climbing &amp; mountaineering</h2>
+  <p>
+    Climbing has given me some of my favorite memories and adventures of my entire
+    life. It's a great excuse to travel to parts of the world that others rarely visit,
+    but which have a lot to offer the visitor. And there is no more improbable place
+    than standing on a glaciated mountain summit or clinging to an overhanging cliff-face.
+  </p>
+  <p class="section-link">
+    <a href="https://www.mountainproject.com/user/201008756/david-goodloe" target="_blank" rel="noopener noreferrer">
+      Mountain Project &rarr;
+    </a>
+  </p>
+  <FilmStrip images={climbingPhotos} label="Climbing and mountaineering photos" />
+
+  <h2>Snowboarding</h2>
+  <p>
+    I've often said that snowboarding is the most fun I've ever had on my own two feet.
+    It's true, and if you've ever ridden, you know the feeling yourself. Living in the
+    southeast US, I certainly don't get to snowboard as much as I get to do some of my
+    other adventures, but we still make time for it. It's such an incredible way to move
+    through mountainous terrain, even if the lift did the hard part for you (unless it
+    didn't... see splitboarding!).
+  </p>
+  <FilmStrip images={snowboardingPhotos} label="Snowboarding photos" />
+</BaseLayout>

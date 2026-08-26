@@ -1,0 +1,73 @@
+---
+// Grid of completed-course certificates. Each tile shows the certificate image and
+// links out to its verification/credential page (opens in a new tab) - a "badge grid"
+// that uses David's own e-certificates. Data lives in src/data/certs.json; images
+// (optimized, metadata-stripped) in public/certs/. Renders nothing until populated.
+import certs from '../data/certs.json';
+---
+
+{
+  certs.length > 0 && (
+    <ul class="cert-grid" aria-label="Courses and certifications">
+      {certs.map((c) => (
+        <li>
+          <a
+            class="cert"
+            href={c.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={`${c.label} (verify)`}
+          >
+            <img src={c.image} alt={c.label} loading="lazy" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+<style>
+  .cert-grid {
+    list-style: none;
+    margin: 1.25rem 0 0.5rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .cert {
+    display: block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.5rem;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .cert img {
+    width: 100%;
+    /* Uniform tile height across certs of differing shapes: fix the aspect to the
+       common KodeKloud ratio and letterbox the odd one out (the LF cert is squarer)
+       so every card is the same size and each certificate still shows in full. */
+    aspect-ratio: 1.414;
+    object-fit: contain;
+    display: block;
+    border-radius: 4px;
+  }
+  .cert:hover,
+  .cert:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    outline: none;
+  }
+  .cert:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cert {
+      transition: none;
+    }
+  }
+</style>

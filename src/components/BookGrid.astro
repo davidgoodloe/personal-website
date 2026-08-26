@@ -1,0 +1,105 @@
+---
+// Book covers from David's Goodreads "read" shelf, grouped by year read (visual after
+// willswire.com/reading). Data + covers are baked by .tmp-goodreads.mjs into
+// src/data/books.json (+ public/books/). Shows the last ~5 years (rolling) and drops
+// undated / childhood books. Re-run the script to refresh after shelving more.
+import books from '../data/books.json';
+
+// Rolling ~5-year window: FLOOR_YEAR is the earliest year shown as its own group.
+// Books read the single year just below the floor fold UP into the floor group (a
+// visual choice so a sparse edge year - e.g. a lone 2021 - isn't its own thin row);
+// anything older, or undated, is dropped.
+const FLOOR_YEAR = new Date().getFullYear() - 4; // 2022 in 2026
+const displayYear = (b) => Math.max(b.year, FLOOR_YEAR);
+
+const shown = books.filter((b) => b.cover && b.year && b.year >= FLOOR_YEAR - 1);
+const years = [...new Set(shown.map(displayYear))].sort((a, b) => b - a);
+const byYear = years.map((y) => ({
+  year: y,
+  books: shown.filter((b) => displayYear(b) === y), // already newest-read first from the script
+}));
+---
+
+<div class="reading-shelf">
+  {
+    byYear.map((group) => (
+      <section class="book-year-group">
+        <h3 class="book-year">{group.year}</h3>
+        <ul class="book-grid" aria-label={`Books read in ${group.year}`}>
+          {group.books.map((b) => (
+            <li>
+              <a
+                class="book"
+                href={b.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`${b.title}${b.author ? ` - ${b.author}` : ''}`}
+              >
+                <img src={b.cover} alt={`${b.title}${b.author ? `, by ${b.author}` : ''}`} loading="lazy" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</div>
+
+<style>
+  .reading-shelf {
+    margin: 1.25rem 0 0.5rem;
+  }
+  .book-year-group + .book-year-group {
+    margin-top: 1.75rem;
+  }
+  .book-year {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 0.15rem 0.6rem;
+    border-radius: 6px;
+    margin: 0 0 0.9rem;
+  }
+  .book-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 0.85rem;
+  }
+  .book {
+    display: block;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .book img {
+    width: 100%;
+    aspect-ratio: 2 / 3;
+    object-fit: cover;
+    display: block;
+    background: var(--surface);
+  }
+  .book:hover,
+  .book:focus-visible {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+    outline: none;
+  }
+  .book:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .book {
+      transition: none;
+    }
+  }
+</style>

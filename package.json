@@ -1,0 +1,20 @@
+{
+  "name": "personal-website",
+  "type": "module",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "fetch:goodreads": "node scripts/goodreads.mjs",
+    "build": "node scripts/goodreads.mjs && astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "astro": "^5.0.0",
+    "sharp": "^0.34.0"
+  }
+}

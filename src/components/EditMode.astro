@@ -1,0 +1,248 @@
+---
+/**
+ * DEV-ONLY in-place copy editor. Rendered by BaseLayout only when import.meta.env.DEV,
+ * so it never ships to production.
+ *
+ * Flow: "Edit copy" -> highlighted text becomes editable -> edit across the page ->
+ * "Save" (stashes to localStorage 'pendingEdits') -> tell Claude "apply my edits".
+ *
+ * Editable = the smallest text units (headings, paragraphs, ledes, list labels, tag
+ * labels, placeholders). Bare text inside mixed elements (e.g. the lede's text next to
+ * a [TODO] span, or "- at" next to a link) is wrapped in a temporary span so it can be
+ * edited too. LINKS are intentionally NOT editable (and don't navigate while editing).
+ * Each edit is matched back to source by its original text.
+ */
+---
+
+<div id="ce-bar" class="ce-bar" aria-live="polite">
+  <button id="ce-toggle" type="button" class="ce-btn ce-primary">✎ Edit copy</button>
+  <span id="ce-count" class="ce-count" hidden>0 changes</span>
+  <button id="ce-save" type="button" class="ce-btn" hidden>Save</button>
+  <button id="ce-discard" type="button" class="ce-btn ce-ghost" hidden>Discard</button>
+</div>
+
+<style>
+  .ce-bar {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem;
+    background: #1a1c1f;
+    border: 1px solid #3a3d42;
+    border-radius: 999px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    font-family: var(--font-sans, system-ui);
+  }
+  .ce-btn {
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e8e8e8;
+    background: #2c2f34;
+    border: 1px solid #3f434a;
+    border-radius: 999px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+  }
+  .ce-btn:hover { background: #363a40; }
+  .ce-primary { background: #e3b34e; color: #1c1608; border-color: #e3b34e; }
+  .ce-primary:hover { background: #eec368; }
+  .ce-ghost { background: transparent; color: #b9bcc0; }
+  .ce-count { font-size: 0.78rem; color: #b9bcc0; padding: 0 0.2rem; }
+
+  :global(body.ce-editing) [data-ce] {
+    outline: 1px dashed color-mix(in srgb, #e3b34e 55%, transparent);
+    outline-offset: 3px;
+    border-radius: 2px;
+    cursor: text;
+  }
+  :global(body.ce-editing) [data-ce]:hover {
+    outline-style: solid;
+    background: color-mix(in srgb, #e3b34e 10%, transparent);
+  }
+  :global(body.ce-editing) [data-ce]:focus {
+    outline: 2px solid #e3b34e;
+    background: color-mix(in srgb, #e3b34e 12%, transparent);
+  }
+  :global(body.ce-editing) [data-ce-changed] {
+    background: color-mix(in srgb, #e3b34e 16%, transparent);
+  }
+  /* links stay put while editing: show they're locked, don't navigate */
+  :global(body.ce-editing) main a { cursor: default; }
+  :global(body.ce-editing) .tile { cursor: text; }
+</style>
+
+<script>
+  const STORAGE_KEY = 'pendingEdits';
+  let toggle: HTMLElement | null = null;
+  let saveBtn: HTMLElement | null = null;
+  let discardBtn: HTMLElement | null = null;
+  let countEl: HTMLElement | null = null;
+  let editing = false;
+
+  const roots = () =>
+    [document.querySelector('main'), document.getElementById('work-lb')].filter(Boolean);
+
+  // Wrap bare (non-whitespace) text nodes so mixed content (text beside a link or a
+  // [TODO] span) becomes its own editable leaf.
+  const wrapBareText = (root) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        if (!node.textContent.trim()) return NodeFilter.FILTER_REJECT;
+        const p = node.parentElement;
+        if (!p || p.closest('#ce-bar')) return NodeFilter.FILTER_REJECT;
+        if (p.tagName === 'A' || p.tagName === 'SCRIPT' || p.tagName === 'STYLE')
+          return NodeFilter.FILTER_REJECT;
+        // only wrap when the text shares its parent with element siblings (mixed content)
+        if (p.children.length === 0) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach((node) => {
+      const span = document.createElement('span');
+      span.setAttribute('data-ce-wrap', '');
+      span.textContent = node.textContent;
+      node.replaceWith(span);
+    });
+  };
+
+  const unwrap = () => {
+    document.querySelectorAll('[data-ce-wrap]').forEach((s) => {
+      s.replaceWith(document.createTextNode(s.textContent || ''));
+    });
+  };
+
+  // Editable = leaf elements (no element children) with real text, excluding links,
+  // the toolbar, empty icon spans, and the lightbox close button.
+  const editables = () => {
+    const out = [];
+    roots().forEach((root) => {
+      root.querySelectorAll('*').forEach((el) => {
+        if (el.children.length !== 0) return;
+        if (el.tagName === 'A') return;
+        if (el.closest('#ce-bar')) return;
+        if (el.id === 'lb-close') return;
+        if (!(el.textContent || '').trim()) return;
+        out.push(el);
+      });
+    });
+    return out;
+  };
+
+  const nearestContext = (el) => {
+    const host = el.closest('h1,h2,h3,h4,p,li,figcaption,blockquote') || el;
+    let n = host.previousElementSibling;
+    while (n) {
+      if (/^H[1-4]$/.test(n.tagName)) return n.textContent.trim();
+      n = n.previousElementSibling;
+    }
+    const h = host.closest('section, article, main')?.querySelector('h1,h2,h3');
+    return h ? h.textContent.trim() : '';
+  };
+
+  const refreshCount = () => {
+    if (!countEl) return;
+    const n = document.querySelectorAll('[data-ce-changed]').length;
+    countEl.textContent = `${n} change${n === 1 ? '' : 's'}`;
+    countEl.hidden = false;
+  };
+
+  const onInput = (e) => {
+    const el = e.target;
+    const now = (el.innerText || '').trim();
+    if (now !== el.dataset.ceOrig) el.setAttribute('data-ce-changed', '');
+    else el.removeAttribute('data-ce-changed');
+    refreshCount();
+  };
+
+  const enable = () => {
+    editing = true;
+    document.body.classList.add('ce-editing');
+    roots().forEach(wrapBareText);
+    editables().forEach((el) => {
+      el.setAttribute('data-ce', '');
+      el.dataset.ceOrig = (el.innerText || '').trim();
+      el.setAttribute('contenteditable', 'true');
+      el.addEventListener('input', onInput);
+    });
+    toggle.textContent = '✕ Stop editing';
+    saveBtn.hidden = false;
+    discardBtn.hidden = false;
+    refreshCount();
+  };
+
+  const disable = () => {
+    editing = false;
+    document.body.classList.remove('ce-editing');
+    document.querySelectorAll('[data-ce]').forEach((el) => {
+      el.removeAttribute('contenteditable');
+      el.removeEventListener('input', onInput);
+      el.removeAttribute('data-ce');
+      el.removeAttribute('data-ce-changed');
+    });
+    unwrap();
+    toggle.textContent = '✎ Edit copy';
+    saveBtn.hidden = true;
+    discardBtn.hidden = true;
+  };
+
+  // Re-bind on each view-transition navigation (the toolbar is swapped in fresh).
+  const init = () => {
+    toggle = document.getElementById('ce-toggle');
+    saveBtn = document.getElementById('ce-save');
+    discardBtn = document.getElementById('ce-discard');
+    countEl = document.getElementById('ce-count');
+    if (!toggle || !saveBtn || !discardBtn) return;
+    editing = false; // a freshly navigated page starts not editing
+    document.body.classList.remove('ce-editing');
+
+    toggle.addEventListener('click', () => (editing ? disable() : enable()));
+
+    saveBtn.addEventListener('click', () => {
+      const edits = [];
+      document.querySelectorAll('[data-ce-changed]').forEach((el) => {
+        edits.push({
+          page: location.pathname.replace(/\/+$/, '') || '/',
+          context: nearestContext(el),
+          cls: el.className || '',
+          tag: el.tagName.toLowerCase(),
+          original: el.dataset.ceOrig,
+          updated: (el.innerText || '').trim(),
+        });
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(edits, null, 2));
+      window.__edits = edits;
+      console.log(`[EditMode] saved ${edits.length} edits\n` + JSON.stringify(edits, null, 2));
+      if (countEl) countEl.textContent = `Saved ${edits.length} - tell Claude "apply my edits"`;
+    });
+
+    discardBtn.addEventListener('click', () => {
+      document.querySelectorAll('[data-ce-changed]').forEach((el) => {
+        el.innerText = el.dataset.ceOrig || '';
+        el.removeAttribute('data-ce-changed');
+      });
+      localStorage.removeItem(STORAGE_KEY);
+      window.__edits = [];
+      refreshCount();
+    });
+  };
+
+  // don't follow links while editing (added once)
+  document.addEventListener(
+    'click',
+    (e) => {
+      if (!editing) return;
+      const a = e.target instanceof Element ? e.target.closest('main a') : null;
+      if (a) e.preventDefault();
+    },
+    true
+  );
+
+  document.addEventListener('astro:page-load', init);
+</script>

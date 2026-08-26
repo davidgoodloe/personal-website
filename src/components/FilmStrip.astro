@@ -1,0 +1,435 @@
+---
+// A horizontal "roll of film" carousel: a continuous scrollable strip of photos
+// with arrows on either side, each frame clickable to open a full-screen lightbox
+// (prev/next, Esc, click-backdrop to close). Self-contained per instance so a page
+// can hold several strips (Travel / Climbing / Snowboarding) without collisions.
+//
+// Scripts follow the project's View-Transitions pattern: element listeners are
+// (re)bound in an init() on astro:page-load; the single document-level keydown is
+// added once and reads the currently-open strip.
+export interface FilmImage {
+  src: string;
+  alt: string;
+}
+interface Props {
+  images: FilmImage[];
+  label?: string; // accessible name for the strip region
+}
+const { images, label = 'Photos' } = Astro.props;
+---
+
+{
+  images.length > 0 && (
+    <div class="filmstrip" data-filmstrip role="group" aria-label={label}>
+      <button class="fs-arrow fs-prev" type="button" aria-label="Scroll left" hidden>
+        &lsaquo;
+      </button>
+
+      <div class="fs-band">
+        <div class="fs-viewport">
+          <ul class="fs-track">
+            {images.map((img, i) => (
+              <li>
+                <button
+                  class="fs-frame"
+                  type="button"
+                  data-index={i}
+                  aria-label={`View photo ${i + 1} of ${images.length}`}
+                >
+                  <img src={img.src} alt={img.alt} loading="lazy" draggable="false" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <button class="fs-arrow fs-next" type="button" aria-label="Scroll right" hidden>
+        &rsaquo;
+      </button>
+
+      <div class="fs-lightbox" hidden>
+        <button class="fs-lb-close" type="button" aria-label="Close">&times;</button>
+        <button class="fs-lb-prev" type="button" aria-label="Previous photo">&lsaquo;</button>
+        <figure class="fs-lb-fig">
+          <img class="fs-lb-img" src="" alt="" />
+        </figure>
+        <button class="fs-lb-next" type="button" aria-label="Next photo">&rsaquo;</button>
+        <div class="fs-lb-counter" aria-hidden="true" />
+      </div>
+    </div>
+  )
+}
+
+<style>
+  .filmstrip {
+    position: relative;
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  /* The dark film base, with sprocket-hole rows top and bottom. */
+  .fs-band {
+    background: #17150f;
+    border-radius: 6px;
+    padding: 12px 0;
+    position: relative;
+  }
+  .fs-band::before,
+  .fs-band::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 6px;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0 7px,
+      rgba(255, 255, 255, 0.5) 7px 15px
+    );
+    border-radius: 2px;
+  }
+  .fs-band::before {
+    top: 3px;
+  }
+  .fs-band::after {
+    bottom: 3px;
+  }
+
+  .fs-viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: none; /* Firefox */
+  }
+  .fs-viewport::-webkit-scrollbar {
+    display: none; /* WebKit */
+  }
+
+  .fs-track {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+    margin: 0;
+    padding: 0 8px;
+  }
+  .fs-track > li {
+    flex: 0 0 auto;
+  }
+
+  .fs-frame {
+    display: block;
+    height: 170px;
+    padding: 0;
+    border: none;
+    background: #0c0b08;
+    border-radius: 2px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: filter 0.15s ease, transform 0.15s ease;
+  }
+  .fs-frame img {
+    height: 170px;
+    width: auto;
+    max-width: none;
+    display: block;
+    object-fit: cover;
+    user-select: none;
+  }
+  .fs-frame:hover img {
+    filter: brightness(1.08);
+  }
+  .fs-frame:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* Side arrows */
+  .fs-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(12, 11, 8, 0.62);
+    color: #fff;
+    font-size: 1.4rem;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .fs-arrow:hover {
+    background: rgba(12, 11, 8, 0.85);
+  }
+  .fs-prev {
+    left: 6px;
+  }
+  .fs-next {
+    right: 6px;
+  }
+  .fs-arrow[hidden] {
+    display: none;
+  }
+
+  /* Full-screen lightbox */
+  .fs-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(10, 9, 7, 0.93);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .fs-lightbox[hidden] {
+    display: none;
+  }
+  .fs-lb-fig {
+    margin: 0;
+    max-width: 92vw;
+    max-height: 88vh;
+    display: flex;
+  }
+  .fs-lb-img {
+    max-width: 92vw;
+    max-height: 88vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  .fs-lb-close,
+  .fs-lb-prev,
+  .fs-lb-next {
+    position: absolute;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    transition: background 0.15s ease;
+  }
+  .fs-lb-close:hover,
+  .fs-lb-prev:hover,
+  .fs-lb-next:hover {
+    background: rgba(255, 255, 255, 0.22);
+  }
+  .fs-lb-close {
+    top: 18px;
+    right: 18px;
+    width: 42px;
+    height: 42px;
+    font-size: 1.6rem;
+  }
+  .fs-lb-prev,
+  .fs-lb-next {
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    font-size: 2rem;
+  }
+  .fs-lb-prev {
+    left: 20px;
+  }
+  .fs-lb-next {
+    right: 20px;
+  }
+  .fs-lb-prev[hidden],
+  .fs-lb-next[hidden] {
+    display: none;
+  }
+  .fs-lb-counter {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.85);
+    font-size: 0.9rem;
+    letter-spacing: 0.02em;
+  }
+
+  @media (max-width: 40rem) {
+    .fs-frame,
+    .fs-frame img {
+      height: 130px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fs-viewport {
+      scroll-behavior: auto;
+    }
+  }
+</style>
+
+<script>
+  // One document-level keydown, added once; it reads the module ref for the
+  // currently-open strip. Element listeners are (re)bound per strip on each nav.
+  interface StripCtl {
+    root: HTMLElement;
+    lb: HTMLElement;
+    imgEl: HTMLImageElement;
+    counter: HTMLElement;
+    prev: HTMLElement;
+    next: HTMLElement;
+    imgs: { src: string; alt: string }[];
+    idx: number;
+    lastFocused: HTMLElement | null;
+    token: number;
+  }
+
+  let openStrip: StripCtl | null = null;
+
+  const renderLb = (s: StripCtl) => {
+    const cur = s.imgs[s.idx];
+    if (!cur) return;
+    const many = s.imgs.length > 1;
+    s.prev.hidden = !many;
+    s.next.hidden = !many;
+    s.counter.hidden = !many;
+    s.counter.textContent = `${s.idx + 1} / ${s.imgs.length}`;
+    // Swap atomically after decode so we never flash the previous frame.
+    const token = ++s.token;
+    const apply = () => {
+      if (token !== s.token) return;
+      s.imgEl.src = cur.src;
+      s.imgEl.alt = cur.alt || '';
+    };
+    const loader = new Image();
+    loader.src = cur.src;
+    if (loader.decode) loader.decode().then(apply, apply);
+    else if (loader.complete) apply();
+    else {
+      loader.onload = apply;
+      loader.onerror = apply;
+    }
+  };
+
+  const stepLb = (s: StripCtl, d: number) => {
+    if (s.imgs.length < 2) return;
+    s.idx = (s.idx + d + s.imgs.length) % s.imgs.length;
+    renderLb(s);
+  };
+
+  const closeLb = (s: StripCtl) => {
+    s.lb.hidden = true;
+    openStrip = null;
+    document.body.style.overflow = '';
+    s.lastFocused?.focus();
+  };
+
+  const onKey = (e: KeyboardEvent) => {
+    if (!openStrip) return;
+    if (e.key === 'Escape') closeLb(openStrip);
+    else if (e.key === 'ArrowRight') stepLb(openStrip, 1);
+    else if (e.key === 'ArrowLeft') stepLb(openStrip, -1);
+  };
+  document.addEventListener('keydown', onKey);
+
+  const setupStrip = (root: HTMLElement) => {
+    const viewport = root.querySelector<HTMLElement>('.fs-viewport');
+    const prevArrow = root.querySelector<HTMLElement>('.fs-prev');
+    const nextArrow = root.querySelector<HTMLElement>('.fs-next');
+    const frames = Array.from(root.querySelectorAll<HTMLButtonElement>('.fs-frame'));
+    const lb = root.querySelector<HTMLElement>('.fs-lightbox');
+    const imgEl = root.querySelector<HTMLImageElement>('.fs-lb-img');
+    const counter = root.querySelector<HTMLElement>('.fs-lb-counter');
+    const lbPrev = root.querySelector<HTMLElement>('.fs-lb-prev');
+    const lbNext = root.querySelector<HTMLElement>('.fs-lb-next');
+    const lbClose = root.querySelector<HTMLElement>('.fs-lb-close');
+    if (!viewport || !prevArrow || !nextArrow || !lb || !imgEl || !counter || !lbPrev || !lbNext || !lbClose) return;
+
+    const imgs = frames.map((f) => {
+      const im = f.querySelector('img');
+      return { src: im?.getAttribute('src') || '', alt: im?.getAttribute('alt') || '' };
+    });
+
+    const ctl: StripCtl = {
+      root,
+      lb,
+      imgEl,
+      counter,
+      prev: lbPrev,
+      next: lbNext,
+      imgs,
+      idx: 0,
+      lastFocused: null,
+      token: 0,
+    };
+
+    // Arrow scrolling + show/hide arrows at the ends.
+    const updateArrows = () => {
+      const max = viewport.scrollWidth - viewport.clientWidth;
+      const x = viewport.scrollLeft;
+      prevArrow.hidden = x <= 2;
+      nextArrow.hidden = x >= max - 2;
+    };
+    const scrollByAmount = (dir: number) => {
+      viewport.scrollBy({ left: dir * viewport.clientWidth * 0.8, behavior: 'smooth' });
+    };
+    prevArrow.addEventListener('click', () => scrollByAmount(-1));
+    nextArrow.addEventListener('click', () => scrollByAmount(1));
+    viewport.addEventListener('scroll', updateArrows, { passive: true });
+    window.addEventListener('resize', updateArrows);
+    // Initial arrow state (after layout).
+    requestAnimationFrame(updateArrows);
+
+    // Drag-to-scroll for a natural "pull the film across" feel (mouse/trackpad).
+    let dragging = false;
+    let startX = 0;
+    let startScroll = 0;
+    let moved = false;
+    viewport.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') return; // native touch scroll is fine
+      dragging = true;
+      moved = false;
+      startX = e.clientX;
+      startScroll = viewport.scrollLeft;
+    });
+    window.addEventListener('pointermove', (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 4) moved = true;
+      viewport.scrollLeft = startScroll - dx;
+    });
+    window.addEventListener('pointerup', () => {
+      dragging = false;
+    });
+
+    // Open the lightbox on a frame click (suppressed if the click was a drag).
+    frames.forEach((f, i) => {
+      f.addEventListener('click', () => {
+        if (moved) return;
+        ctl.idx = i;
+        ctl.lastFocused = f;
+        renderLb(ctl);
+        lb.hidden = false;
+        openStrip = ctl;
+        document.body.style.overflow = 'hidden';
+        lbClose.focus();
+      });
+    });
+
+    lbPrev.addEventListener('click', () => stepLb(ctl, -1));
+    lbNext.addEventListener('click', () => stepLb(ctl, 1));
+    lbClose.addEventListener('click', () => closeLb(ctl));
+    lb.addEventListener('click', (e) => {
+      if (e.target === lb) closeLb(ctl); // click backdrop closes
+    });
+  };
+
+  const initFilmstrips = () => {
+    openStrip = null; // any prior overlay was swapped away by the transition
+    document.body.style.overflow = '';
+    document.querySelectorAll<HTMLElement>('[data-filmstrip]').forEach(setupStrip);
+  };
+  document.addEventListener('astro:page-load', initFilmstrips);
+</script>

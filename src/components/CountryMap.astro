@@ -1,0 +1,423 @@
+---
+/**
+ * Interactive activity map. Filter = "All" + one tab per activity that has data.
+ *   - Global views (All / Travel / Climbing) use the world map with shaded countries.
+ *   - Mountaineering / Snowboarding swap to a detailed US map with destination dots.
+ * Shading + dots are baked in at build time; a tiny script only flips the active view.
+ *
+ *   <CountryMap
+ *     visited={["gb","fr"]} climbed={["no"]}
+ *     mountaineering={[{ name: "Mt Baker", lat: 48.78, lng: -121.81, status: "summit" }]}
+ *     snowboarding={[{ name: "Stowe", lat: 44.53, lng: -72.78 }]}
+ *   />
+ *
+ * Mountaineering markers take a status: "summit" (green) or "attempt" (yellow).
+ * Base maps (both CC BY-SA 3.0): Simple World Map (A. MacDonald / F. Lekschas) and
+ * USA location map (NordNordWest, equirectangular - so lat/lng -> x/y is linear).
+ */
+import worldRaw from './world-map.min.svg?raw';
+import usRaw from './us-map.svg?raw';
+
+interface Marker {
+  name: string;
+  lat: number;
+  lng: number;
+  status?: 'summit' | 'attempt';
+  nudge?: [number, number]; // small manual x/y offset in US-map units, where the projection is off
+}
+interface Props {
+  visited?: string[];
+  climbed?: string[];
+  mountaineering?: Marker[];
+  snowboarding?: Marker[];
+}
+const { visited = [], climbed = [], mountaineering = [], snowboarding = [] } = Astro.props;
+
+const norm = (a: string[]) => new Set(a.map((c) => c.trim().toLowerCase()).filter(Boolean));
+const visitedSet = norm(visited);
+const climbedSet = norm(climbed);
+
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+// US equirectangular projection from the map's stated bounds
+const uX = (lng: number) => ((lng + 125.5) / 59) * 1859;
+const uY = (lat: number) => ((49.8 - lat) / 25.6) * 968;
+
+const markerAt = (m: Marker, kind: 'mtn' | 'snow', s: number, x: number, y: number) => {
+  const color = kind === 'mtn' ? (m.status === 'attempt' ? 'is-attempt' : 'is-summit') : 'is-board';
+  const layer = kind === 'mtn' ? 'mk-mtn' : 'mk-snow';
+  const shape =
+    kind === 'mtn'
+      ? `<path d="M ${x} ${(y - 6.2 * s).toFixed(1)} L ${(x - 5.4 * s).toFixed(1)} ${(y + 4 * s).toFixed(1)} L ${(x + 5.4 * s).toFixed(1)} ${(y + 4 * s).toFixed(1)} Z"/>`
+      : `<circle cx="${x}" cy="${y}" r="${(4.6 * s).toFixed(1)}"/>`;
+  const label = `<text class="mk-label" x="${x}" y="${(y - 9 * s).toFixed(1)}">${esc(m.name)}</text>`;
+  return `<g class="mk ${layer} ${color}">${shape}${label}</g>`;
+};
+
+// Project a layer, then fan out any markers that land within `minDist` of each other
+// (real clusters like the Colorado or Boone-NC resorts) so each stays visible + hoverable.
+const buildLayer = (
+  list: Marker[],
+  kind: 'mtn' | 'snow',
+  s: number,
+  X: (n: number) => number,
+  Y: (n: number) => number,
+  minDist: number,
+  ringR: number,
+  applyNudge = false
+) => {
+  const pts = list.map((m) => ({ m, x: X(m.lng), y: Y(m.lat), fx: 0, fy: 0 }));
+  const clusters: { cx: number; cy: number; items: typeof pts }[] = [];
+  for (const p of pts) {
+    let c = clusters.find((cl) => Math.hypot(cl.cx - p.x, cl.cy - p.y) < minDist);
+    if (!c) {
+      c = { cx: p.x, cy: p.y, items: [] };
+      clusters.push(c);
+    }
+    c.items.push(p);
+  }
+  for (const c of clusters) {
+    const n = c.items.length;
+    if (n === 1) {
+      c.items[0].fx = c.items[0].x;
+      c.items[0].fy = c.items[0].y;
+      continue;
+    }
+    // spread members around the cluster's true centroid, starting sideways (angle 0)
+    // so pairs fan east-west rather than pushing a marker north off the coast/border
+    const gx = c.items.reduce((sum, p) => sum + p.x, 0) / n;
+    const gy = c.items.reduce((sum, p) => sum + p.y, 0) / n;
+    const R = ringR * (n > 4 ? 1.35 : 1);
+    c.items.forEach((p, i) => {
+      const a = (i / n) * 2 * Math.PI;
+      p.fx = gx + Math.cos(a) * R;
+      p.fy = gy + Math.sin(a) * R;
+    });
+  }
+  if (applyNudge) {
+    for (const p of pts) {
+      if (p.m.nudge) {
+        p.fx += p.m.nudge[0];
+        p.fy += p.m.nudge[1];
+      }
+    }
+  }
+  return pts.map((p) => markerAt(p.m, kind, s, +p.fx.toFixed(1), +p.fy.toFixed(1))).join('');
+};
+// The US map shows mountaineering in a zoomed western-US frame but snowboarding in the
+// full-US frame, so those layers get different marker sizes / declustering per map.
+
+// world map: tag shaded countries + append small dots (shown only in All view)
+let world = worldRaw;
+const unmatched: string[] = [];
+const tag = (set: Set<string>, attr: string) => {
+  for (const c of set) {
+    const n = `id="${c}"`;
+    if (world.includes(n)) world = world.replace(n, `${n} ${attr}`);
+    else unmatched.push(`${c} (${attr})`);
+  }
+};
+tag(visitedSet, 'data-travel');
+tag(climbedSet, 'data-climb');
+if (unmatched.length) console.warn(`[CountryMap] no map path for: ${unmatched.join(', ')}`);
+
+// US map: recolor to theme + append larger dots
+let us = usRaw
+  .replaceAll('fill:#fefee9', 'fill:var(--map-land)')
+  .replaceAll('fill:#e0e0e0', 'fill:var(--map-neighbor)')
+  .replaceAll('fill:#c6ecff', 'fill:transparent')
+  .replaceAll('stroke:#0978ab', 'stroke:var(--map-stroke)')
+  .replaceAll('stroke:#646464', 'stroke:var(--map-stroke)')
+  .replaceAll('overflow:visible', 'overflow:hidden'); // so the western-US crop clips cleanly
+us = us.replace(
+  '</svg>',
+  `<g class="dots">${buildLayer(mountaineering, 'mtn', 1.4, uX, uY, 1, 11, true)}${buildLayer(snowboarding, 'snow', 3, uX, uY, 34, 22, true)}</g></svg>`
+);
+
+const layers = [
+  visitedSet.size ? { key: 'travel', label: 'Travel' } : null,
+  climbedSet.size ? { key: 'climbing', label: 'Climbing' } : null,
+  mountaineering.length ? { key: 'mountaineering', label: 'Mountaineering' } : null,
+  snowboarding.length ? { key: 'snowboarding', label: 'Snowboarding' } : null,
+].filter(Boolean) as { key: string; label: string }[];
+const showFilter = layers.length > 1;
+const hasMtn = mountaineering.length > 0;
+---
+
+<figure class="country-map">
+  {
+    showFilter && (
+      <div class="map-filter" role="group" aria-label="Filter map by activity">
+        {layers.map((l, i) => (
+          <button type="button" class="chip" data-view={l.key} aria-pressed={i === 0 ? 'true' : 'false'}>
+            <span class={`sw sw-${l.key}`} aria-hidden="true" />
+            {l.label}
+          </button>
+        ))}
+      </div>
+    )
+  }
+
+  <div class="map-frame" data-view={layers[0]?.key ?? 'travel'}>
+    <div class="world-map" set:html={world} />
+    <div class="us-map" set:html={us} />
+  </div>
+
+  {
+    hasMtn && (
+      <p class="status-key" aria-hidden="true">
+        <span class="skey"><span class="tri is-summit" />Summited</span>
+        <span class="skey"><span class="tri is-attempt" />Attempted</span>
+      </p>
+    )
+  }
+
+  <p class="credit">
+    Maps:
+    <a href="https://github.com/flekschas/simple-world-map" target="_blank" rel="noopener noreferrer">Simple World Map</a>
+    and
+    <a href="https://commons.wikimedia.org/wiki/File:USA_location_map.svg" target="_blank" rel="noopener noreferrer">USA location map</a>,
+    <a href="https://creativecommons.org/licenses/by-sa/3.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 3.0</a>
+  </p>
+</figure>
+
+<script>
+  // Mountaineering peaks are all in the west, so that view crops the US map to the
+  // western states (through Colorado's eastern edge); snowboarding uses the full US.
+  const US_WEST = '0 -18 742 508';
+
+  // Re-bind on each view-transition navigation, since the map markup is swapped fresh.
+  const initMaps = () => {
+    document.querySelectorAll<HTMLElement>('.country-map').forEach((fig) => {
+      const frame = fig.querySelector<HTMLElement>('.map-frame');
+      const usSvg = fig.querySelector<SVGSVGElement>('.us-map svg');
+      const chips = Array.from(fig.querySelectorAll<HTMLButtonElement>('.chip'));
+      if (!frame || !chips.length) return;
+      const usFull = usSvg?.getAttribute('viewBox') || '0 0 1859 968';
+      chips.forEach((chip) => {
+        chip.addEventListener('click', () => {
+          const view = chip.dataset.view || 'all';
+          frame.dataset.view = view;
+          if (usSvg) usSvg.setAttribute('viewBox', view === 'mountaineering' ? US_WEST : usFull);
+          chips.forEach((c) => c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'));
+        });
+      });
+    });
+  };
+  document.addEventListener('astro:page-load', initMaps);
+</script>
+
+<style>
+  .country-map {
+    margin: 1.25rem 0 0;
+    --map-land: #d7d6d2;
+    --map-neighbor: #e6e5e1;
+    --map-stroke: var(--bg);
+    --map-visited: #ecd485;
+    --map-climbed: var(--accent);
+    --mk-summit: #4fa85f; /* green - summited */
+    --mk-attempt: #edc23f; /* yellow - attempt */
+    --mk-snow: #3b5bdb; /* royal blue - snowboarding */
+  }
+  @media (prefers-color-scheme: dark) {
+    .country-map {
+      --map-land: #40434a;
+      --map-neighbor: #34363b;
+      --map-visited: #8a6d2b;
+    }
+  }
+
+  /* ---- filter chips (swatches double as legend) ---- */
+  .map-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 0.85rem;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font: inherit;
+    font-size: 0.85rem;
+    line-height: 1;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--fg);
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .chip:hover {
+    border-color: var(--accent);
+  }
+  .chip[aria-pressed='true'] {
+    border-color: var(--accent);
+    background: var(--code-bg);
+    font-weight: 600;
+  }
+  .chip:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .sw {
+    flex: none;
+    width: 12px;
+    height: 12px;
+    display: inline-block;
+  }
+  .sw-travel {
+    background: var(--map-visited);
+    border-radius: 3px;
+  }
+  .sw-climbing {
+    background: var(--map-climbed);
+    border-radius: 3px;
+  }
+  .sw-mountaineering {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 11px solid var(--mk-summit);
+  }
+  .sw-snowboarding {
+    background: var(--mk-snow);
+    border-radius: 50%;
+  }
+
+  /* ---- maps: swap world <-> US by view ---- */
+  .us-map {
+    display: none;
+  }
+  .map-frame[data-view='mountaineering'] .world-map,
+  .map-frame[data-view='snowboarding'] .world-map {
+    display: none;
+  }
+  .map-frame[data-view='mountaineering'] .us-map,
+  .map-frame[data-view='snowboarding'] .us-map {
+    display: block;
+  }
+  .map-frame :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .world-map :global(svg path) {
+    fill: var(--map-land);
+    stroke: var(--map-stroke);
+    stroke-width: 0.4;
+  }
+
+  /* world shading */
+  .map-frame[data-view='travel'] .world-map :global([data-travel]),
+  .map-frame[data-view='travel'] .world-map :global([data-travel] path) {
+    fill: var(--map-visited);
+  }
+  .map-frame[data-view='climbing'] .world-map :global([data-climb]),
+  .map-frame[data-view='climbing'] .world-map :global([data-climb] path) {
+    fill: var(--map-climbed);
+  }
+
+  /* ---- markers ---- */
+  .map-frame :global(.mk) {
+    display: none;
+    stroke: var(--map-stroke);
+  }
+  .map-frame :global(.is-summit) {
+    fill: var(--mk-summit);
+  }
+  .map-frame :global(.is-attempt) {
+    fill: var(--mk-attempt);
+  }
+  .map-frame :global(.is-board) {
+    fill: var(--mk-snow);
+  }
+  .world-map :global(.mk) {
+    stroke-width: 0.8;
+  }
+  .us-map :global(.mk-snow) {
+    stroke-width: 2.5;
+  }
+  .us-map :global(.mk-mtn) {
+    stroke-width: 1.2;
+  }
+  /* which markers show in which view */
+  .map-frame[data-view='mountaineering'] .us-map :global(.mk-mtn) {
+    display: block;
+  }
+  .map-frame[data-view='snowboarding'] .us-map :global(.mk-snow) {
+    display: block;
+  }
+  /* hover labels - small white text with a dark outline for legibility */
+  .map-frame :global(.mk-label) {
+    opacity: 0;
+    pointer-events: none;
+    fill: #fff;
+    paint-order: stroke;
+    stroke: rgba(8, 6, 4, 0.78);
+    text-anchor: middle;
+    font-weight: 600;
+    transition: opacity 0.12s ease;
+  }
+  .world-map :global(.mk-label) {
+    font-size: 11px;
+    stroke-width: 2.5px;
+  }
+  .us-map :global(.mk-snow .mk-label) {
+    font-size: 27px;
+    stroke-width: 6px;
+  }
+  .us-map :global(.mk-mtn .mk-label) {
+    font-size: 13px;
+    stroke-width: 3px;
+  }
+  .map-frame :global(.mk:hover .mk-label) {
+    opacity: 1;
+  }
+
+  /* ---- status key (mountaineering only) ---- */
+  .status-key {
+    display: none;
+    gap: 1.1rem;
+    margin: 0.6rem 0 0;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .map-frame[data-view='mountaineering'] ~ .status-key {
+    display: flex;
+  }
+  .skey {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .tri {
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 11px solid;
+  }
+  .tri.is-summit {
+    border-bottom-color: var(--mk-summit);
+  }
+  .tri.is-attempt {
+    border-bottom-color: var(--mk-attempt);
+  }
+
+  .credit {
+    margin: 0.6rem 0 0;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+  .credit a {
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .credit a:hover {
+    color: var(--accent);
+  }
+</style>

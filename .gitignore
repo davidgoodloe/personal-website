@@ -1,0 +1,29 @@
+# build output
+dist/
+
+# dependencies
+node_modules/
+
+# generated Astro types
+.astro/
+
+# personal source material (resumes, notes) - reference only, never committed/deployed
+reference/
+
+# environment
+.env
+.env.production
+.env.*.local
+
+# Claude Code tooling + internal working docs (kept out of the public repo)
+.claude/
+CLAUDE.md
+PROGRESS.md
+
+# macOS
+.DS_Store
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

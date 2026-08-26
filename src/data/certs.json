@@ -1,0 +1,22 @@
+[
+  {
+    "image": "/certs/kodekloud-linux-basics.jpg",
+    "url": "https://learn.kodekloud.com/learn/certificate/9c31bbbc-4cd4-48cd-884d-9be9d9d0fc11",
+    "label": "Learning Linux Basics - KodeKloud"
+  },
+  {
+    "image": "/certs/kodekloud-devops-prereq.jpg",
+    "url": "https://learn.kodekloud.com/learn/certificate/e099028b-bdeb-4a59-ab7e-e0e9af6c96ba",
+    "label": "DevOps Pre-Requisite Course - KodeKloud"
+  },
+  {
+    "image": "/certs/kodekloud-12-factor-app.jpg",
+    "url": "https://learn.kodekloud.com/learn/certificate/70c65881-bda6-4300-8a99-a9ae9cd9efb5",
+    "label": "12-Factor App - KodeKloud"
+  },
+  {
+    "image": "/certs/lf-devsecops-lfs180.jpg",
+    "url": "https://ti-user-certificates.s3.amazonaws.com/e0df7fbf-a057-42af-8a1f-590912be5460/cf9b1ac2-6688-4249-ad7d-b87cf18d158d-david-goodloe-aa841ffe-6db3-4671-9acf-03fa1f7b688e-certificate.pdf",
+    "label": "Introduction to DevSecOps for Managers (LFS180) - The Linux Foundation"
+  }
+]

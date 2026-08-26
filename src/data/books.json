@@ -1,0 +1,652 @@
+[
+  {
+    "id": "176443792",
+    "title": "Disquiet Gods (The Sun Eater, #6)",
+    "author": "Christopher Ruocchio",
+    "rating": 4,
+    "readAt": "Thu, 6 Aug 2026 00:00:00 +0000",
+    "year": 2026,
+    "cover": "/books/176443792.jpg",
+    "url": "https://www.goodreads.com/book/show/176443792"
+  },
+  {
+    "id": "60427253",
+    "title": "Ashes of Man (The Sun Eater, #5)",
+    "author": "Christopher Ruocchio",
+    "rating": 4,
+    "readAt": "Sun, 5 Jul 2026 00:00:00 +0000",
+    "year": 2026,
+    "cover": "/books/60427253.jpg",
+    "url": "https://www.goodreads.com/book/show/60427253"
+  },
+  {
+    "id": "57443696",
+    "title": "Kingdoms of Death (The Sun Eater, #4)",
+    "author": "Christopher Ruocchio",
+    "rating": 5,
+    "readAt": "Mon, 18 May 2026 00:00:00 +0000",
+    "year": 2026,
+    "cover": "/books/57443696.jpg",
+    "url": "https://www.goodreads.com/book/show/57443696"
+  },
+  {
+    "id": "50156751",
+    "title": "Demon in White (The Sun Eater, #3)",
+    "author": "Christopher Ruocchio",
+    "rating": 5,
+    "readAt": "Tue, 31 Mar 2026 00:00:00 +0000",
+    "year": 2026,
+    "cover": "/books/50156751.jpg",
+    "url": "https://www.goodreads.com/book/show/50156751"
+  },
+  {
+    "id": "41564599",
+    "title": "Howling Dark (The Sun Eater, #2)",
+    "author": "Christopher Ruocchio",
+    "rating": 5,
+    "readAt": "Wed, 25 Feb 2026 00:00:00 +0000",
+    "year": 2026,
+    "cover": "/books/41564599.jpg",
+    "url": "https://www.goodreads.com/book/show/41564599"
+  },
+  {
+    "id": "36454667",
+    "title": "Empire of Silence (The Sun Eater, #1)",
+    "author": "Christopher Ruocchio",
+    "rating": 5,
+    "readAt": "Sun, 25 Jan 2026 00:00:00 +0000",
+    "year": 2026,
+    "cover": "/books/36454667.jpg",
+    "url": "https://www.goodreads.com/book/show/36454667"
+  },
+  {
+    "id": "7670",
+    "title": "The Andromeda Strain (Andromeda, #1)",
+    "author": "Michael Crichton",
+    "rating": 4,
+    "readAt": "Thu, 25 Dec 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/7670.jpg",
+    "url": "https://www.goodreads.com/book/show/7670"
+  },
+  {
+    "id": "1268479",
+    "title": "Warbreaker",
+    "author": "Brandon Sanderson",
+    "rating": 0,
+    "readAt": "Thu, 25 Dec 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/1268479.jpg",
+    "url": "https://www.goodreads.com/book/show/1268479"
+  },
+  {
+    "id": "28698036",
+    "title": "Secret History (Mistborn, #3.5)",
+    "author": "Brandon Sanderson",
+    "rating": 3,
+    "readAt": "Sun, 14 Dec 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/28698036.jpg",
+    "url": "https://www.goodreads.com/book/show/28698036"
+  },
+  {
+    "id": "23947089",
+    "title": "The Lost Metal (Mistborn, #7)",
+    "author": "Brandon Sanderson",
+    "rating": 5,
+    "readAt": "Mon, 1 Dec 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/23947089.jpg",
+    "url": "https://www.goodreads.com/book/show/23947089"
+  },
+  {
+    "id": "18739426",
+    "title": "The Bands of Mourning (Mistborn, #6)",
+    "author": "Brandon Sanderson",
+    "rating": 4,
+    "readAt": "Sat, 15 Nov 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/18739426.jpg",
+    "url": "https://www.goodreads.com/book/show/18739426"
+  },
+  {
+    "id": "16065004",
+    "title": "Shadows of Self (Mistborn, #5)",
+    "author": "Brandon Sanderson",
+    "rating": 0,
+    "readAt": "Mon, 22 Sep 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/16065004.jpg",
+    "url": "https://www.goodreads.com/book/show/16065004"
+  },
+  {
+    "id": "10803121",
+    "title": "The Alloy of Law (Mistborn, #4)",
+    "author": "Brandon Sanderson",
+    "rating": 3,
+    "readAt": "Thu, 31 Jul 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/10803121.jpg",
+    "url": "https://www.goodreads.com/book/show/10803121"
+  },
+  {
+    "id": "2767793",
+    "title": "The Hero of Ages (Mistborn, #3)",
+    "author": "Brandon Sanderson",
+    "rating": 4,
+    "readAt": "Sun, 25 May 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/2767793.jpg",
+    "url": "https://www.goodreads.com/book/show/2767793"
+  },
+  {
+    "id": "68429",
+    "title": "The Well of Ascension (Mistborn, #2)",
+    "author": "Brandon Sanderson",
+    "rating": 3,
+    "readAt": "Fri, 28 Feb 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/68429.jpg",
+    "url": "https://www.goodreads.com/book/show/68429"
+  },
+  {
+    "id": "68428",
+    "title": "Mistborn: The Final Empire (Mistborn, #1)",
+    "author": "Brandon Sanderson",
+    "rating": 5,
+    "readAt": "Fri, 31 Jan 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/68428.jpg",
+    "url": "https://www.goodreads.com/book/show/68428"
+  },
+  {
+    "id": "6033525",
+    "title": "The Indifferent Stars Above: The Harrowing Saga of a Donner Party Bride",
+    "author": "Daniel James Brown",
+    "rating": 4,
+    "readAt": "Sun, 5 Jan 2025 00:00:00 +0000",
+    "year": 2025,
+    "cover": "/books/6033525.jpg",
+    "url": "https://www.goodreads.com/book/show/6033525"
+  },
+  {
+    "id": "29227774",
+    "title": "Light Bringer (Red Rising Saga, #6)",
+    "author": "Pierce Brown",
+    "rating": 5,
+    "readAt": "Fri, 25 Oct 2024 00:00:00 +0000",
+    "year": 2024,
+    "cover": "/books/29227774.jpg",
+    "url": "https://www.goodreads.com/book/show/29227774"
+  },
+  {
+    "id": "29226553",
+    "title": "Dark Age (Red Rising Saga, #5)",
+    "author": "Pierce Brown",
+    "rating": 5,
+    "readAt": "Sun, 25 Aug 2024 00:00:00 +0000",
+    "year": 2024,
+    "cover": "/books/29226553.jpg",
+    "url": "https://www.goodreads.com/book/show/29226553"
+  },
+  {
+    "id": "33257757",
+    "title": "Iron Gold (Red Rising Saga, #4)",
+    "author": "Pierce Brown",
+    "rating": 5,
+    "readAt": "Thu, 25 Jul 2024 00:00:00 +0000",
+    "year": 2024,
+    "cover": "/books/33257757.jpg",
+    "url": "https://www.goodreads.com/book/show/33257757"
+  },
+  {
+    "id": "18966806",
+    "title": "Morning Star (Red Rising Saga, #3)",
+    "author": "Pierce Brown",
+    "rating": 5,
+    "readAt": "Tue, 25 Jun 2024 00:00:00 +0000",
+    "year": 2024,
+    "cover": "/books/18966806.jpg",
+    "url": "https://www.goodreads.com/book/show/18966806"
+  },
+  {
+    "id": "18966819",
+    "title": "Golden Son (Red Rising Saga, #2)",
+    "author": "Pierce Brown",
+    "rating": 5,
+    "readAt": "Sat, 25 May 2024 00:00:00 +0000",
+    "year": 2024,
+    "cover": "/books/18966819.jpg",
+    "url": "https://www.goodreads.com/book/show/18966819"
+  },
+  {
+    "id": "15839976",
+    "title": "Red Rising (Red Rising Saga, #1)",
+    "author": "Pierce Brown",
+    "rating": 3,
+    "readAt": "Thu, 25 Apr 2024 00:00:00 +0000",
+    "year": 2024,
+    "cover": "/books/15839976.jpg",
+    "url": "https://www.goodreads.com/book/show/15839976"
+  },
+  {
+    "id": "22816087",
+    "title": "Seveneves",
+    "author": "Neal Stephenson",
+    "rating": 5,
+    "readAt": "Tue, 24 Oct 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/22816087.jpg",
+    "url": "https://www.goodreads.com/book/show/22816087"
+  },
+  {
+    "id": "238531",
+    "title": "Five Equations That Changed the World: The Power and Poetry of Mathematics",
+    "author": "Michael Guillen",
+    "rating": 5,
+    "readAt": "Mon, 25 Sep 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/238531.jpg",
+    "url": "https://www.goodreads.com/book/show/238531"
+  },
+  {
+    "id": "22212880",
+    "title": "Scaling Up: How a Few Companies Make It...and Why the Rest Don't (Rockefeller Habits 2.0 Revised Edition)",
+    "author": "Verne Harnish",
+    "rating": 3,
+    "readAt": "Fri, 25 Aug 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/22212880.jpg",
+    "url": "https://www.goodreads.com/book/show/22212880"
+  },
+  {
+    "id": "833015",
+    "title": "SPIN Selling: Situation Problem Implication Need-payoff",
+    "author": "Neil Rackham",
+    "rating": 3,
+    "readAt": "Fri, 25 Aug 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/833015.jpg",
+    "url": "https://www.goodreads.com/book/show/833015"
+  },
+  {
+    "id": "23250211",
+    "title": "30-Second Quantum Theory: The 50 most important thought-provoking quantum concepts, each explained in half a minute",
+    "author": "Brian Clegg",
+    "rating": 4,
+    "readAt": "Fri, 25 Aug 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/23250211.jpg",
+    "url": "https://www.goodreads.com/book/show/23250211"
+  },
+  {
+    "id": "29579",
+    "title": "Foundation (Foundation, #1)",
+    "author": "Isaac Asimov",
+    "rating": 3,
+    "readAt": "Tue, 25 Jul 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/29579.jpg",
+    "url": "https://www.goodreads.com/book/show/29579"
+  },
+  {
+    "id": "34593456",
+    "title": "The Null Prophecy",
+    "author": "Michael Guillen",
+    "rating": 2,
+    "readAt": "Tue, 25 Apr 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/34593456.jpg",
+    "url": "https://www.goodreads.com/book/show/34593456"
+  },
+  {
+    "id": "113934",
+    "title": "The Goal: A Process of Ongoing Improvement",
+    "author": "Eliyahu M. Goldratt",
+    "rating": 4,
+    "readAt": "Sat, 25 Feb 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/113934.jpg",
+    "url": "https://www.goodreads.com/book/show/113934"
+  },
+  {
+    "id": "739561",
+    "title": "Bridges to Infinity: The Human side of Mathematics",
+    "author": "Michael Guillen",
+    "rating": 4,
+    "readAt": "Wed, 25 Jan 2023 00:00:00 +0000",
+    "year": 2023,
+    "cover": "/books/739561.jpg",
+    "url": "https://www.goodreads.com/book/show/739561"
+  },
+  {
+    "id": "2086051",
+    "title": "The Strongest Link: Forging a Profitable and Enduring Corporate Alliance",
+    "author": "Gene Slowinski",
+    "rating": 3,
+    "readAt": "Thu, 25 Aug 2022 00:00:00 +0000",
+    "year": 2022,
+    "cover": "/books/2086051.jpg",
+    "url": "https://www.goodreads.com/book/show/2086051"
+  },
+  {
+    "id": "174834",
+    "title": "The Cost of Discipleship",
+    "author": "Dietrich Bonhoeffer",
+    "rating": 5,
+    "readAt": "Thu, 25 Aug 2022 00:00:00 +0000",
+    "year": 2022,
+    "cover": "/books/174834.jpg",
+    "url": "https://www.goodreads.com/book/show/174834"
+  },
+  {
+    "id": "44767458",
+    "title": "Dune (Dune, #1)",
+    "author": "Frank Herbert",
+    "rating": 0,
+    "readAt": "Mon, 25 Apr 2022 00:00:00 +0000",
+    "year": 2022,
+    "cover": "/books/44767458.jpg",
+    "url": "https://www.goodreads.com/book/show/44767458"
+  },
+  {
+    "id": "36076",
+    "title": "The Speed of Trust: The One Thing that Changes Everything",
+    "author": "Stephen M.R. Covey",
+    "rating": 0,
+    "readAt": "Fri, 25 Mar 2022 00:00:00 +0000",
+    "year": 2022,
+    "cover": "/books/36076.jpg",
+    "url": "https://www.goodreads.com/book/show/36076"
+  },
+  {
+    "id": "7108725",
+    "title": "Start with Why: How Great Leaders Inspire Everyone to Take Action",
+    "author": "Simon Sinek",
+    "rating": 0,
+    "readAt": "Fri, 25 Feb 2022 00:00:00 +0000",
+    "year": 2022,
+    "cover": "/books/7108725.jpg",
+    "url": "https://www.goodreads.com/book/show/7108725"
+  },
+  {
+    "id": "25541028",
+    "title": "Elon Musk: Tesla, SpaceX, and the Quest for a Fantastic Future",
+    "author": "Ashlee Vance",
+    "rating": 0,
+    "readAt": "Tue, 25 Jan 2022 00:00:00 +0000",
+    "year": 2022,
+    "cover": "/books/25541028.jpg",
+    "url": "https://www.goodreads.com/book/show/25541028"
+  },
+  {
+    "id": "20342617",
+    "title": "Just Mercy",
+    "author": "Bryan Stevenson",
+    "rating": 0,
+    "readAt": "Wed, 25 Aug 2021 00:00:00 +0000",
+    "year": 2021,
+    "cover": "/books/20342617.jpg",
+    "url": "https://www.goodreads.com/book/show/20342617"
+  },
+  {
+    "id": "76865",
+    "title": "Good to Great: Why Some Companies Make the Leap... and Others Don't",
+    "author": "Jim Collins",
+    "rating": 0,
+    "readAt": "Thu, 25 Feb 2021 00:00:00 +0000",
+    "year": 2021,
+    "cover": "/books/76865.jpg",
+    "url": "https://www.goodreads.com/book/show/76865"
+  },
+  {
+    "id": "13589149",
+    "title": "Every Good Endeavor: Connecting Your Work to God's Plan for the World",
+    "author": "Timothy J. Keller",
+    "rating": 5,
+    "readAt": "Sun, 25 Mar 2018 00:00:00 +0000",
+    "year": 2018,
+    "cover": "/books/13589149.jpg",
+    "url": "https://www.goodreads.com/book/show/13589149"
+  },
+  {
+    "id": "3636",
+    "title": "The Giver (Giver, #1)",
+    "author": "Lois Lowry",
+    "rating": 4,
+    "readAt": "Sun, 25 Nov 2012 00:00:00 +0000",
+    "year": 2012,
+    "cover": "/books/3636.jpg",
+    "url": "https://www.goodreads.com/book/show/3636"
+  },
+  {
+    "id": "41733839",
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "rating": 3,
+    "readAt": "Sat, 25 Aug 2012 00:00:00 +0000",
+    "year": 2012,
+    "cover": "/books/41733839.jpg",
+    "url": "https://www.goodreads.com/book/show/41733839"
+  },
+  {
+    "id": "7260188",
+    "title": "Mockingjay (The Hunger Games, #3)",
+    "author": "Suzanne Collins",
+    "rating": 4,
+    "readAt": "Sat, 25 Aug 2012 00:00:00 +0000",
+    "year": 2012,
+    "cover": "/books/7260188.jpg",
+    "url": "https://www.goodreads.com/book/show/7260188"
+  },
+  {
+    "id": "6148028",
+    "title": "Catching Fire (The Hunger Games, #2)",
+    "author": "Suzanne Collins",
+    "rating": 4,
+    "readAt": "Sat, 25 Aug 2012 00:00:00 +0000",
+    "year": 2012,
+    "cover": "/books/6148028.jpg",
+    "url": "https://www.goodreads.com/book/show/6148028"
+  },
+  {
+    "id": "2767052",
+    "title": "The Hunger Games (The Hunger Games, #1)",
+    "author": "Suzanne Collins",
+    "rating": 4,
+    "readAt": "Sat, 25 Aug 2012 00:00:00 +0000",
+    "year": 2012,
+    "cover": "/books/2767052.jpg",
+    "url": "https://www.goodreads.com/book/show/2767052"
+  },
+  {
+    "id": "7664041",
+    "title": "Inheritance (The Inheritance Cycle, #4)",
+    "author": "Christopher Paolini",
+    "rating": 4,
+    "readAt": "Thu, 25 Aug 2011 00:00:00 +0000",
+    "year": 2011,
+    "cover": "/books/7664041.jpg",
+    "url": "https://www.goodreads.com/book/show/7664041"
+  },
+  {
+    "id": "4556058",
+    "title": "The Last Olympian (Percy Jackson and the Olympians, #5)",
+    "author": "Rick Riordan",
+    "rating": 0,
+    "readAt": "Fri, 25 Mar 2011 00:00:00 +0000",
+    "year": 2011,
+    "cover": "/books/4556058.jpg",
+    "url": "https://www.goodreads.com/book/show/4556058"
+  },
+  {
+    "id": "8130423",
+    "title": "The Battle of the Labyrinth (Percy Jackson and the Olympians, #4)",
+    "author": "Rick Riordan",
+    "rating": 0,
+    "readAt": "Tue, 25 Jan 2011 00:00:00 +0000",
+    "year": 2011,
+    "cover": "/books/8130423.jpg",
+    "url": "https://www.goodreads.com/book/show/8130423"
+  },
+  {
+    "id": "561456",
+    "title": "The Titan’s Curse (Percy Jackson and the Olympians, #3)",
+    "author": "Rick Riordan",
+    "rating": 0,
+    "readAt": "Sat, 25 Dec 2010 00:00:00 +0000",
+    "year": 2010,
+    "cover": "/books/561456.jpg",
+    "url": "https://www.goodreads.com/book/show/561456"
+  },
+  {
+    "id": "40727118",
+    "title": "The Sea of Monsters (Percy Jackson and the Olympians, #2)",
+    "author": "Rick Riordan",
+    "rating": 0,
+    "readAt": "Fri, 29 Oct 2010 00:00:00 +0000",
+    "year": 2010,
+    "cover": "/books/40727118.jpg",
+    "url": "https://www.goodreads.com/book/show/40727118"
+  },
+  {
+    "id": "123675190",
+    "title": "The Lightning Thief (Percy Jackson and the Olympians, #1)",
+    "author": "Rick Riordan",
+    "rating": 0,
+    "readAt": "Wed, 25 Aug 2010 00:00:00 +0000",
+    "year": 2010,
+    "cover": "/books/123675190.jpg",
+    "url": "https://www.goodreads.com/book/show/123675190"
+  },
+  {
+    "id": "2248573",
+    "title": "Brisingr (The Inheritance Cycle, #3)",
+    "author": "Christopher Paolini",
+    "rating": 5,
+    "readAt": "Wed, 25 Aug 2010 00:00:00 +0000",
+    "year": 2010,
+    "cover": "/books/2248573.jpg",
+    "url": "https://www.goodreads.com/book/show/2248573"
+  },
+  {
+    "id": "45978",
+    "title": "Eldest (The Inheritance Cycle, #2)",
+    "author": "Christopher Paolini",
+    "rating": 5,
+    "readAt": "Tue, 25 Aug 2009 00:00:00 +0000",
+    "year": 2009,
+    "cover": "/books/45978.jpg",
+    "url": "https://www.goodreads.com/book/show/45978"
+  },
+  {
+    "id": "58613345",
+    "title": "Harry Potter and the Half-Blood Prince (Harry Potter, #6)",
+    "author": "J.K. Rowling",
+    "rating": 5,
+    "readAt": "Tue, 25 Aug 2009 00:00:00 +0000",
+    "year": 2009,
+    "cover": "/books/58613345.jpg",
+    "url": "https://www.goodreads.com/book/show/58613345"
+  },
+  {
+    "id": "659469",
+    "title": "The Hobbit",
+    "author": "Chuck Dixon",
+    "rating": 5,
+    "readAt": "Tue, 25 Aug 2009 00:00:00 +0000",
+    "year": 2009,
+    "cover": "/books/659469.jpg",
+    "url": "https://www.goodreads.com/book/show/659469"
+  },
+  {
+    "id": "113436",
+    "title": "Eragon (The Inheritance Cycle #1)",
+    "author": "Christopher Paolini",
+    "rating": 4,
+    "readAt": "Mon, 25 Aug 2008 00:00:00 +0000",
+    "year": 2008,
+    "cover": "/books/113436.jpg",
+    "url": "https://www.goodreads.com/book/show/113436"
+  },
+  {
+    "id": "61215351",
+    "title": "The Fellowship of the Ring (The Lord of the Rings, #1)",
+    "author": "J.R.R. Tolkien",
+    "rating": 5,
+    "readAt": "Sat, 25 Aug 2007 00:00:00 +0000",
+    "year": 2007,
+    "cover": "/books/61215351.jpg",
+    "url": "https://www.goodreads.com/book/show/61215351"
+  },
+  {
+    "id": "58613224",
+    "title": "Harry Potter and the Deathly Hallows (Harry Potter, #7)",
+    "author": "J.K. Rowling",
+    "rating": 5,
+    "readAt": "Sat, 25 Aug 2007 00:00:00 +0000",
+    "year": 2007,
+    "cover": "/books/58613224.jpg",
+    "url": "https://www.goodreads.com/book/show/58613224"
+  },
+  {
+    "id": "58613451",
+    "title": "Harry Potter and the Order of the Phoenix (Harry Potter, #5)",
+    "author": "J.K. Rowling",
+    "rating": 5,
+    "readAt": "Fri, 25 Aug 2006 00:00:00 +0000",
+    "year": 2006,
+    "cover": "/books/58613451.jpg",
+    "url": "https://www.goodreads.com/book/show/58613451"
+  },
+  {
+    "id": "58613424",
+    "title": "Harry Potter and the Goblet of Fire (Harry Potter, #4)",
+    "author": "J.K. Rowling",
+    "rating": 5,
+    "readAt": "Fri, 25 Aug 2006 00:00:00 +0000",
+    "year": 2006,
+    "cover": "/books/58613424.jpg",
+    "url": "https://www.goodreads.com/book/show/58613424"
+  },
+  {
+    "id": "5",
+    "title": "Harry Potter and the Prisoner of Azkaban (Harry Potter, #3)",
+    "author": "J.K. Rowling",
+    "rating": 5,
+    "readAt": "Sun, 25 Sep 2005 00:00:00 +0000",
+    "year": 2005,
+    "cover": "/books/5.jpg",
+    "url": "https://www.goodreads.com/book/show/5"
+  },
+  {
+    "id": "15881",
+    "title": "Harry Potter and the Chamber of Secrets (Harry Potter, #2)",
+    "author": "J.K. Rowling",
+    "rating": 5,
+    "readAt": "Thu, 25 Aug 2005 00:00:00 +0000",
+    "year": 2005,
+    "cover": "/books/15881.jpg",
+    "url": "https://www.goodreads.com/book/show/15881"
+  },
+  {
+    "id": "42844155",
+    "title": "Harry Potter and the Philosopher's Stone (Harry Potter, #1)",
+    "author": "J.K. Rowling",
+    "rating": 5,
+    "readAt": "Sat, 1 Jan 2005 00:00:00 +0000",
+    "year": 2005,
+    "cover": "/books/42844155.jpg",
+    "url": "https://www.goodreads.com/book/show/42844155"
+  },
+  {
+    "id": "132080146",
+    "title": "The Lion, the Witch and the Wardrobe (Chronicles of Narnia, #1)",
+    "author": "C.S. Lewis",
+    "rating": 5,
+    "readAt": "Wed, 25 Aug 2004 00:00:00 +0000",
+    "year": 2004,
+    "cover": "/books/132080146.jpg",
+    "url": "https://www.goodreads.com/book/show/132080146"
+  }
+]

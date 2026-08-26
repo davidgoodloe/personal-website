@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BookGrid from '../components/BookGrid.astro';
+import CertGrid from '../components/CertGrid.astro';
+---
+
+<BaseLayout title="Learning - David Goodloe">
+  <h1>Learning</h1>
+  <p>Always studying business, finance, and investing as a continuation of my MBA. But currently focused on learning and implementing AI, as well as some of the disciplines of software development - like DevOps, Kubernetes, cloud, and Linux - that will continue to form the digital infrastructure of the AI age to come.</p>
+  <ul class="link-list">
+    <li>Working through the <a href="https://kodekloud.com/learning-path/kubernetes" target="_blank" rel="noopener noreferrer">Kubernetes learning path</a> on Kodekloud.</li>
+    <li>Most days, the <a href="https://aidailybrief.ai/" target="_blank" rel="noopener noreferrer">AI Daily Brief</a> podcast.</li>
+  </ul>
+
+  <h2>Courses</h2>
+  <CertGrid />
+
+  <h2>Reading <span class="h2-aside">(<a href="https://www.goodreads.com/user/show/203579059-david-goodloe" target="_blank" rel="noopener noreferrer"><em>follow me on <u>Goodreads</u></em></a>)</span></h2>
+  <BookGrid />
+</BaseLayout>

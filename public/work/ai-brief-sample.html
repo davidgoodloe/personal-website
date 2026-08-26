@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Brief - In the Inbox</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+  :root{
+    --ground:#e7ebf1;
+    --surface:#ffffff;
+    --ink:#151b23;
+    --muted:#5b6675;
+    --line:#c7cfdb;
+    --hairline:#d7dde6;
+    --accent:#1c5f8c;
+    --bar:#eef1f6;
+    --shadow:0 2px 6px rgba(20,26,35,.08),0 30px 60px -28px rgba(20,26,35,.42);
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --ground:#0d1117;
+      --surface:#161c24;
+      --ink:#e6ecf3;
+      --muted:#95a1b1;
+      --line:#2a333f;
+      --hairline:#232c37;
+      --accent:#59a9d6;
+      --bar:#1b222c;
+      --shadow:0 2px 6px rgba(0,0,0,.5),0 34px 70px -30px rgba(0,0,0,.8);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#0d1117;
+    --surface:#161c24;
+    --ink:#e6ecf3;
+    --muted:#95a1b1;
+    --line:#2a333f;
+    --hairline:#232c37;
+    --accent:#59a9d6;
+    --bar:#1b222c;
+    --shadow:0 2px 6px rgba(0,0,0,.5),0 34px 70px -30px rgba(0,0,0,.8);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--ground);color:var(--ink);
+    font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    line-height:1.55;padding:clamp(20px,5vw,60px) clamp(16px,4vw,40px);
+  }
+  .wrap{max-width:760px;margin:0 auto}
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 12px;
+  }
+  h1{
+    font-family:"Archivo",sans-serif;font-weight:800;letter-spacing:-.02em;
+    font-size:clamp(28px,4.4vw,44px);line-height:1.04;margin:0 0 14px;text-wrap:balance;
+  }
+  .dek{font-size:clamp(15px,1.7vw,18px);color:var(--muted);max-width:60ch;margin:0 0 22px}
+  .dek b{color:var(--ink);font-weight:600}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 30px}
+  .chip{
+    font-family:"IBM Plex Mono",monospace;font-size:11.5px;font-weight:500;
+    color:var(--muted);background:var(--surface);border:1px solid var(--hairline);
+    padding:5px 10px;border-radius:999px;
+  }
+  .chip b{color:var(--ink);font-weight:600}
+
+  /* window mockup */
+  .window{
+    border:1px solid var(--hairline);border-radius:14px;overflow:hidden;
+    box-shadow:var(--shadow);background:var(--surface);
+  }
+  .titlebar{
+    display:flex;align-items:center;gap:8px;height:38px;padding:0 14px;
+    background:var(--bar);border-bottom:1px solid var(--hairline);
+  }
+  .dot{width:11px;height:11px;border-radius:50%}
+  .dot.r{background:#e0654f}.dot.y{background:#e0b23a}.dot.g{background:#4faf6d}
+  .titlebar .t{
+    flex:1;text-align:center;font-family:"IBM Plex Mono",monospace;font-size:12px;
+    color:var(--muted);letter-spacing:.02em;
+  }
+
+  /* the email itself keeps its real, light rendering */
+  .mail{background:#f6f7f9;max-height:70vh;overflow-y:auto;position:relative}
+  .mailhead{
+    background:#ffffff;border-bottom:1px solid #e6e9ee;
+    padding:20px 22px 16px;max-width:640px;margin:0 auto;
+  }
+  .subject{font-size:19px;font-weight:700;color:#1f2328;margin:0 0 12px;letter-spacing:-.01em}
+  .fromrow{display:flex;align-items:center;gap:12px}
+  .avatar{
+    width:40px;height:40px;border-radius:50%;flex:none;background:#1c5f8c;color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;
+    font-family:"Archivo",sans-serif;letter-spacing:.02em;
+  }
+  .meta{min-width:0;font-size:13.5px;line-height:1.45}
+  .meta .name{color:#1f2328;font-weight:600}
+  .meta .name span{color:#8a929d;font-weight:400}
+  .meta .to{color:#8a929d;font-family:"IBM Plex Mono",monospace;font-size:12px}
+
+  /* faithful copy of the delivered email's body styles */
+  .paper{max-width:640px;margin:0 auto;padding:22px 22px 40px;
+         font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+         color:#1f2328;line-height:1.6;font-size:16px;background:#f6f7f9}
+  .paper h1{font-family:inherit;font-weight:700;font-size:22px;line-height:1.3;margin:0 0 16px;letter-spacing:0;color:#1f2328}
+  .paper h2{font-size:18px;line-height:1.35;margin:28px 0 8px;font-weight:700;color:#1f2328}
+  .paper h3{font-size:16px;margin:20px 0 6px}
+  .paper p{margin:0 0 14px}
+  .paper ul{margin:0 0 14px;padding-left:22px}
+  .paper li{margin:0 0 6px}
+  .paper a{color:#1a56db;text-decoration:none}
+  .paper a:hover{text-decoration:underline}
+  .paper code{background:#eef0f3;padding:1px 5px;border-radius:4px;
+              font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px}
+  .paper hr{border:0;border-top:1px solid #e1e4e8;margin:22px 0}
+  .paper em{color:#57606a}
+  .paper strong{color:#1f2328}
+  .fade{position:sticky;bottom:0;height:60px;margin-top:-60px;
+        background:linear-gradient(to bottom,rgba(246,247,249,0),#f6f7f9);pointer-events:none}
+
+  .caption{margin:20px 2px 0;color:var(--muted);font-size:14.5px;max-width:66ch}
+  .caption b{color:var(--ink);font-weight:600}
+  .footnote{margin:22px 2px 0;color:var(--muted);font-size:12.5px;font-family:"IBM Plex Mono",monospace}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">The Product</p>
+  <h1>What actually shows up</h1>
+  <p class="dek">I wanted something I'd actually read, so the agent writes a <b>real brief</b>, takes a position, and links every fact it uses. Here's a real example from July.</p>
+  <div class="chips">
+    <span class="chip"><b>~1,200</b> words</span>
+    <span class="chip">5–7 min read</span>
+    <span class="chip">every fact <b>sourced</b></span>
+    <span class="chip">written for me</span>
+  </div>
+
+  <div class="window">
+    <div class="titlebar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+      <span class="t">AI News Daily Brief - Inbox</span>
+    </div>
+    <div class="mail">
+      <div class="mailhead">
+        <p class="subject">AI Brief - Wed, Jul 22</p>
+        <div class="fromrow">
+          <div class="avatar" aria-hidden="true">AI</div>
+          <div class="meta">
+            <div class="name">AI News Daily Brief <span>&lt;onboarding@resend.dev&gt;</span></div>
+            <div class="to">to you@example.com · 7:00 AM</div>
+          </div>
+        </div>
+      </div>
+      <div class="paper">
+<h1>AI Brief - Wednesday, July 22, 2026</h1>
+<p>Good morning. Yesterday's theme was models getting cheaper; today's is the money behind them getting more circular. AMD just committed up to $5 billion to Anthropic in exchange for a giant chip order, Alphabet's stake in that same Anthropic is about to flatter its earnings tonight, and a fresh study says most companies still can't turn any of this AI spending into revenue. Three angles on the same tension: the AI economy is now large enough to fund itself, but usage hasn't caught up.</p>
+<h2>AMD bets up to $5 billion on Anthropic - its third gigawatt-scale customer this year</h2>
+<p>AMD and Anthropic <a href="https://www.cnbc.com/2026/07/22/amd-anthropic-ai-chip-investment.html">announced a sweeping partnership</a> this morning at AMD's Advancing AI 2026 conference: Anthropic will deploy <strong>up to 2 gigawatts</strong> of AMD Instinct MI450-series GPUs in AMD's "Helios" rack systems, with the first gigawatt live in the first half of 2027, and AMD will invest up to $5 billion in Anthropic as milestones are hit (<a href="https://the-decoder.com/anthropic-will-deploy-2-gigawatts-of-amd-gpus-for-claude-in-a-deal-worth-up-to-5-billion/">The Decoder</a>). It's AMD's third gigawatt-scale AI customer in nine months, after OpenAI and Meta. Shares traded in a wide $522–$548 range Wednesday, extending a multi-day rally (<a href="https://finance.yahoo.com/quote/AMD/">Yahoo Finance</a>).</p>
+<p>The event itself was substantive beyond the Anthropic news: AMD debuted its Zen 6 "Venice" server CPU - the first x86 chip built on TSMC's 2-nanometer process - alongside an updated Helios rack packing 31 TB of HBM4 memory (<a href="https://www.techtimes.com/articles/321257/20260722/amd-advancing-ai-2026-opens-zen-6-venice-helios-open-ai-rack-bet.htm">Tech Times</a>).</p>
+<p>Two gigawatts is roughly the draw of a couple of nuclear reactors, worth remembering the next time "AI chip deal" sounds abstract - it's also a grid and cooling story, which is exactly where your world intersects this one.</p>
+<h2>Deal structure draws "circular financing" scrutiny - again</h2>
+<p>Unlike OpenAI and Meta, which each got warrants for up to 160 million AMD shares (roughly a fifth of the company combined), Anthropic received no warrants - just a capped cash stake, which several analysts read as a more disciplined structure (<a href="https://www.tipranks.com/news/amd-stock-gains-on-expanding-ai-push-with-2gw-anthropic-deal-and-5b-investment-plan">TipRanks</a>). Still, the pattern - chipmakers investing in labs that then buy the chips back - is drawing the same "circularity" critique leveled at Nvidia-OpenAI and Amazon-Anthropic arrangements earlier this year. Jefferies flagged that deal economics, not headlines, are what matter now that AMD has already given away a fifth of itself in warrants; Bank of America's semiconductor analyst said he isn't worried about it.</p>
+<h2>Tonight's test: Alphabet and Tesla open earnings season</h2>
+<p><strong>Alphabet (GOOGL)</strong> and <strong>Tesla (TSLA)</strong> report after today's close, kicking off the "Magnificent Seven" earnings cycle (<a href="https://www.cnbc.com/2026/07/19/earnings-playbook-alphabet-tesla-headline-this-weeks-big-reports.html">CNBC</a>). One number worth watching for: Alphabet's roughly 14% stake in Anthropic was marked at $965 billion by the end of Q2, up from $380 billion at the end of Q1 - a paper gain analysts estimate adds around $80 billion to Alphabet's reported operating income, pushing Bank of America's EPS estimate to $8.38 against a Street consensus near $2.90 (<a href="https://247wallst.com/investing/2026/07/20/will-anthropic-boost-alphabets-earnings-to-the-stratosphere/">24/7 Wall St.</a>). It's a reminder that a chunk of "Big Tech AI profit" this quarter is an accounting revaluation, not new revenue - worth separating from the real signal, which is Google Cloud's growth rate.</p>
+<p>Tesla delivered a record 480,126 vehicles in Q2, beating estimates by over 74,000 units, but raised 2026 capex guidance to $25 billion (from $20 billion) to fund AI infrastructure, Dojo compute, and Robotaxi/Optimus build-out - so the debate tonight is margins and cash burn, not units (<a href="https://www.insiderfinance.io/news/tesla-q2-2026-earnings-robotaxi-cybercab-optimus">InsiderFinance</a>). <em>This is information, not investment advice - do your own research.</em></p>
+<h2>Anthropic-robotics acquisition rumor, denied</h2>
+<p>A weekend claim that Anthropic was buying robot-foundation-model startup Physical Intelligence spread fast on X before Physical Intelligence's CEO told employees it wasn't true. But TechCrunch reports the two companies did hold acquisition talks this spring, with no confirmation either way on whether they've continued (<a href="https://techcrunch.com/2026/07/21/the-anthropic-physical-intelligence-rumor-roiling-ai-twitter/">TechCrunch</a>). Treat as unconfirmed, but the strategic logic - that physical-world data may be a prerequisite for the next capability jump, and no acquisition needed to build a hardware team from scratch - is a trend worth tracking regardless of this specific deal.</p>
+<h2>Tools &amp; techniques worth trying this week</h2>
+<p><strong>1. Try an agent that ships the deliverable, not a draft.</strong> OpenAI's <a href="https://openai.com/index/chatgpt-for-your-most-ambitious-work/">ChatGPT Work</a>, rolled out July 9, is a mode that takes an outcome you describe, gathers context from connected apps (Slack, Drive, calendars), breaks the job into steps, and runs unattended - producing an actual formatted spreadsheet with working formulas, a real slide deck, or a small hosted web app, not markdown you have to reassemble. For a BU director, that's the difference between "AI helped me think about the proposal" and "AI produced the proposal." Worth a trial run on something low-stakes first: a monthly ops summary or a lead-scoring sheet.</p>
+<p><strong>2. Give agents a mission, not a prompt, and let them run long.</strong> Wharton's Ethan Mollick has been documenting a shift: Claude's Opus 4.7 recently worked unattended for 14 hours to build software that would otherwise take 2–17 weeks of engineering time, for about $251 in tokens (<a href="https://www.oneusefulthing.org/">One Useful Thing</a>). The lesson isn't "spend $251" - it's that today's frontier agents are worth pointing at a real multi-hour task (a competitive teardown, a first-pass retrofit-cost model across a dozen buildings) and walking away from, rather than babysitting turn by turn.</p>
+<p><strong>3. Use Skills to make a workflow reusable.</strong> If you find yourself re-explaining the same process to an AI tool each week (how to format a proposal, what your standard site-walkthrough template looks like), package it once as a reusable instruction set - most major agent platforms (Claude, ChatGPT, Gemini) now support some form of this. Write it once like a training doc for a new hire; invoke it by name from then on.</p>
+<h2>From the community</h2>
+<p>Retail sentiment on the AMD-Anthropic deal is split, and it's worth reading as sentiment, not fact: some traders on Stocktwits framed the capped, warrant-free structure of Anthropic's stake as a sign AMD learned from criticism of its OpenAI and Meta deals, while others flagged that a chipmaker funding its own customer's chip purchases is still, definitionally, circular - whatever the wrapper (<a href="https://stocktwits.com/news-articles/markets/equity/amd-stock-5-billion-anthropic-investment-helios-ai-infrastructure/cZZmjzPR7DI">Stocktwits</a>). <em>(Community chatter - read as sentiment, not fact.)</em></p>
+<h2>Also notable: the AI revenue gap widens</h2>
+<p>A new HCLTech survey of 500 enterprise decision-makers found 90% say GenAI and agentic AI are transforming their workflows - but only <strong>18%</strong> say it's delivering significant revenue impact, and the firm's separate research projects <strong>43%</strong> of major enterprise AI initiatives will fail (<a href="https://www.hcltech.com/press-releases/hcltech-report-warns-43-enterprise-ai-initiatives-may-fail-leaders-face-shrinking">HCLTech</a>). The gap isn't tool access - it's translating pilots into enterprise-wide outcomes with real accountability. A useful gut-check before greenlighting the next AI initiative: define the revenue or cost outcome up front, not just the workflow it touches.</p>
+<p>Have a good one.</p>
+<h2>Sources</h2>
+<ul>
+<li>AMD-Anthropic deal - <a href="https://www.cnbc.com/2026/07/22/amd-anthropic-ai-chip-investment.html">CNBC</a>, <a href="https://the-decoder.com/anthropic-will-deploy-2-gigawatts-of-amd-gpus-for-claude-in-a-deal-worth-up-to-5-billion/">The Decoder</a>, <a href="https://www.tipranks.com/news/amd-stock-gains-on-expanding-ai-push-with-2gw-anthropic-deal-and-5b-investment-plan">TipRanks</a></li>
+<li>AMD Advancing AI 2026 (Zen 6 Venice, Helios) - <a href="https://www.techtimes.com/articles/321257/20260722/amd-advancing-ai-2026-opens-zen-6-venice-helios-open-ai-rack-bet.htm">Tech Times</a></li>
+<li>AMD stock levels - <a href="https://finance.yahoo.com/quote/AMD/">Yahoo Finance</a></li>
+<li>Alphabet/Tesla earnings preview - <a href="https://www.cnbc.com/2026/07/19/earnings-playbook-alphabet-tesla-headline-this-weeks-big-reports.html">CNBC</a>, <a href="https://247wallst.com/investing/2026/07/20/will-anthropic-boost-alphabets-earnings-to-the-stratosphere/">24/7 Wall St.</a>, <a href="https://www.insiderfinance.io/news/tesla-q2-2026-earnings-robotaxi-cybercab-optimus">InsiderFinance</a></li>
+<li>Anthropic-Physical Intelligence rumor - <a href="https://techcrunch.com/2026/07/21/the-anthropic-physical-intelligence-rumor-roiling-ai-twitter/">TechCrunch</a></li>
+<li>ChatGPT Work - <a href="https://openai.com/index/chatgpt-for-your-most-ambitious-work/">OpenAI</a></li>
+<li>Long-running agent example - <a href="https://www.oneusefulthing.org/">Ethan Mollick, One Useful Thing</a></li>
+<li>From the community - <a href="https://stocktwits.com/news-articles/markets/equity/amd-stock-5-billion-anthropic-investment-helios-ai-infrastructure/cZZmjzPR7DI">Stocktwits</a></li>
+<li>Enterprise AI revenue gap - <a href="https://www.hcltech.com/press-releases/hcltech-report-warns-43-enterprise-ai-initiatives-may-fail-leaders-face-shrinking">HCLTech</a></li>
+</ul>
+      </div>
+      <div class="fade" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <p class="caption">This is a real one, <b>rendered by the same <code style="font-family:'IBM Plex Mono',monospace;font-size:13px">send_brief.py</code></b> that emails it every morning. I gave it a few rules. Lead with the point. Link every fact to a source worth trusting. And end each item with a line on why it actually matters to me, which is honestly the part I care about most.</p>
+  <p class="footnote">Scroll the window to read the whole thing.</p>
+</div>
+</body>
+</html>
