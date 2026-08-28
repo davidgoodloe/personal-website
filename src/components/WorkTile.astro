@@ -24,7 +24,7 @@ const cover = images[0];
 ---
 
 <article
-  class:list={['tile', { feature }]}
+  class:list={['tile', { feature, 'has-cta': !!cta }]}
   tabindex="0"
   role="button"
   aria-label={`${title} - open details`}
@@ -53,6 +53,12 @@ const cover = images[0];
     border: 1px solid var(--border);
     background: var(--code-bg);
     transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.28s ease;
+  }
+  /* Tiles that offer visitor interaction (a cta link, e.g. a sign-up) get a gold
+     outline; the legend beneath the Work subheader explains it. border-box keeps
+     the 2px border from shifting the grid. */
+  .tile.has-cta {
+    border: 2px solid var(--accent);
   }
   .tile.feature {
     grid-column: span 2;

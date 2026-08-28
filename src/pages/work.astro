@@ -87,6 +87,9 @@ const projects = [
     cta: { label: 'Sign up', href: '/work/ai-brief-signup.html' },
   },
 ];
+
+// Any tile with a cta gets a gold outline; show the legend below the subheader.
+const hasCta = projects.some((p) => p.cta);
 ---
 
 <BaseLayout title="Work - David Goodloe">
@@ -96,6 +99,14 @@ const projects = [
     <p class="lede">
       Spanning a variety of industries, applications, and technologies
     </p>
+    {
+      hasCta && (
+        <p class="work-legend">
+          <span class="legend-swatch" aria-hidden="true" />
+          <em>= Click in for a signup link</em>
+        </p>
+      )
+    }
   </div>
 
   <div class="grid">
@@ -160,7 +171,7 @@ const projects = [
 <style>
   .work-head {
     max-width: var(--measure);
-    margin-bottom: 1.6rem;
+    margin-bottom: 1rem;
   }
   .eyebrow {
     font-size: 0.72rem;
@@ -175,6 +186,22 @@ const projects = [
   }
   .work-head .lede {
     margin: 0;
+  }
+  /* Legend for the gold-outlined tiles (mirrors the outline as a small hollow box). */
+  .work-legend {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0.7rem 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .legend-swatch {
+    flex: none;
+    width: 22px;
+    height: 15px;
+    border: 2px solid var(--accent);
+    border-radius: 3px;
   }
 
   .grid {
