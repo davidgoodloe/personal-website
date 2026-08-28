@@ -44,6 +44,7 @@ const nextPage = currentIndex >= 0 ? nav[(currentIndex + 1) % nav.length] : null
     />
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
+    {Astro.site && <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />}
     {
       /* Home is the entry to the Home<->About portrait morph. Prefetch the About
          cluster images here (low priority) so the two side photos are already cached
