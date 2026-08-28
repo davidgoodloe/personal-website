@@ -80,9 +80,11 @@ const projects = [
       { src: '/work/ai-arch.jpg', alt: 'System architecture diagram of the AI news brief pipeline' },
       { src: '/work/ai2.jpg', alt: 'Daily AI news brief email in the inbox' },
     ],
-    // NOTE: "HERE" currently points to a TEMPORARY placeholder page (public/work/ai-brief-signup.html).
-    // Swap that href for the real sign-up URL once it exists.
-    desc: "A fully automated AI news brief that lands in my inbox at 7am every morning without me lifting a finger. A Claude Code routine runs in the cloud on a cron, researches the last day or two of AI news with live web search, writes a <a href='/work/ai-brief-sample.html' target='_blank' rel='noopener noreferrer'>5-7 minute read</a> organized around my interests, compares and deduplicates it against the previous days' briefs so nothing repeats, then commits and pushes the file to a GitHub repo.\n\nBut the routine's sandbox is network-locked and can't actually send mail, so the git push trips a GitHub Action running on open network that renders the markdown to HTML and sends it through Resend's API to my email. All the editorial rules live in a CLAUDE.md that the routine reads fresh on every run, so tweaking what it covers, how it writes, and who it addresses is just a matter of editing that one file.\n\nIn fact, if you'd like to sign up for it and stay up to date on the latest in AI, click <a href='/work/ai-brief-signup.html' target='_blank' rel='noopener noreferrer'>HERE</a>! :)",
+    // NOTE: the "Sign up" cta below points to a TEMPORARY placeholder page
+    // (public/work/ai-brief-signup.html). Swap that href for the real sign-up URL once it exists.
+    // (Button label "Sign up" is a functional placeholder - David to confirm/reword.)
+    desc: "A fully automated AI news brief that lands in my inbox at 7am every morning without me lifting a finger. A Claude Code routine runs in the cloud on a cron, researches the last day or two of AI news with live web search, writes a <a href='/work/ai-brief-sample.html' target='_blank' rel='noopener noreferrer'>5-7 minute read</a> organized around my interests, compares and deduplicates it against the previous days' briefs so nothing repeats, then commits and pushes the file to a GitHub repo.\n\nBut the routine's sandbox is network-locked and can't actually send mail, so the git push trips a GitHub Action running on open network that renders the markdown to HTML and sends it through Resend's API to my email. All the editorial rules live in a CLAUDE.md that the routine reads fresh on every run, so tweaking what it covers, how it writes, and who it addresses is just a matter of editing that one file.\n\nIn fact, if you'd like to sign up for it and stay up to date on the latest in AI, click the button above! :)",
+    cta: { label: 'Sign up', href: '/work/ai-brief-signup.html' },
   },
 ];
 ---
@@ -146,6 +148,7 @@ const projects = [
         <div class="lb-count" id="lb-count" hidden></div>
       </div>
       <div class="lb-body">
+        <a class="lb-cta" id="lb-cta" target="_blank" rel="noopener noreferrer" hidden></a>
         <span class="tag" id="lb-tag"><span class="dot"></span><span id="lb-tagtext"></span></span>
         <h2 id="lb-title"></h2>
         <p id="lb-desc"></p>
@@ -281,6 +284,25 @@ const projects = [
     min-height: 0;
     overflow-y: auto;       /* long descriptions scroll here */
     padding: 1.3rem 1.5rem 1.6rem;
+    /* Force a visible scrollbar so content below the fold (e.g. the sign-up
+       link at the end of a long description) is obviously reachable. macOS
+       otherwise hides the overlay scrollbar until you already scroll. */
+    scrollbar-width: thin;                       /* Firefox */
+    scrollbar-color: var(--accent) transparent;  /* Firefox: gold thumb */
+  }
+  .lb-body::-webkit-scrollbar {
+    width: 12px;
+  }
+  .lb-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .lb-body::-webkit-scrollbar-thumb {
+    background: var(--accent);
+    border-radius: 999px;
+    border: 3px solid var(--surface); /* inset the thumb so it reads as a pill */
+  }
+  .lb-body::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-hover);
   }
   .lb-body h2 {
     margin: 0.15rem 0 0.5rem;
@@ -297,6 +319,42 @@ const projects = [
   }
   .lb-body a:hover {
     color: var(--accent-hover);
+  }
+  /* Optional link-out button: floats to the top-right of the text area, text
+     wraps to its left. Gold pill, dark text - overrides the default link look. */
+  .lb-body .lb-cta {
+    float: right;
+    margin: 0.1rem 0 0.7rem 1.1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+    font-size: 0.92rem;
+    line-height: 1.1;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    transition: background 0.15s ease, transform 0.15s ease;
+    touch-action: manipulation;
+  }
+  .lb-body .lb-cta::after {
+    content: "\2192"; /* right arrow, signals a link-out */
+    font-weight: 700;
+  }
+  .lb-body .lb-cta:hover {
+    color: var(--on-accent);
+    transform: translateY(-1px);
+  }
+  @media (hover: hover) {
+    .lb-body .lb-cta:hover {
+      background: var(--accent-hover);
+    }
+  }
+  .lb-body .lb-cta[hidden] {
+    display: none;
   }
   .lb-body .tag {
     display: inline-flex;
@@ -345,6 +403,7 @@ const projects = [
   let img: HTMLImageElement | null = null;
   let title: HTMLElement | null = null;
   let desc: HTMLElement | null = null;
+  let cta: HTMLAnchorElement | null = null;
   let tagText: HTMLElement | null = null;
   let dot: HTMLElement | null = null;
   let prevBtn: HTMLElement | null = null;
@@ -404,6 +463,19 @@ const projects = [
     if (title) title.textContent = tile.dataset.title || '';
     // Descriptions may contain author-written markup (e.g. a link); render as HTML.
     if (desc) desc.innerHTML = tile.dataset.desc || '';
+    // Optional link-out button (only tiles that define a cta show it).
+    if (cta) {
+      const ctaHref = tile.dataset.ctaHref;
+      const ctaLabel = tile.dataset.ctaLabel;
+      if (ctaHref && ctaLabel) {
+        cta.href = ctaHref;
+        cta.textContent = ctaLabel;
+        cta.hidden = false;
+      } else {
+        cta.hidden = true;
+        cta.removeAttribute('href');
+      }
+    }
     if (tagText) tagText.textContent = tile.dataset.tag || '';
     if (dot) dot.style.background = tile.dataset.color || '';
     lastFocused = tile;
@@ -423,6 +495,7 @@ const projects = [
     img = document.getElementById('lb-img') as HTMLImageElement | null;
     title = document.getElementById('lb-title');
     desc = document.getElementById('lb-desc');
+    cta = document.getElementById('lb-cta') as HTMLAnchorElement | null;
     tagText = document.getElementById('lb-tagtext');
     dot = lb.querySelector('.dot') as HTMLElement | null;
     prevBtn = document.getElementById('lb-prev');

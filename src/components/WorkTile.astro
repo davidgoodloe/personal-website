@@ -15,9 +15,10 @@ interface Props {
   images: Img[];
   desc: string;
   feature?: boolean;
+  cta?: { label: string; href: string }; // optional link-out button shown in the detail view
 }
 
-const { title, tag, domain, images, desc, feature = false } = Astro.props;
+const { title, tag, domain, images, desc, feature = false, cta } = Astro.props;
 const color = `var(--c-${domain})`;
 const cover = images[0];
 ---
@@ -32,6 +33,8 @@ const cover = images[0];
   data-tag={tag}
   data-desc={desc}
   data-color={color}
+  data-cta-label={cta?.label}
+  data-cta-href={cta?.href}
 >
   <img src={cover.src} alt={cover.alt} loading="lazy" />
   <div class="veil"></div>
