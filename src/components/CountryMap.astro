@@ -247,10 +247,18 @@ const hasMtn = mountaineering.length > 0;
     background: transparent;
     color: var(--fg);
     cursor: pointer;
+    /* Remove the ~300ms tap delay / double-tap-zoom so a single tap registers
+       immediately on touch devices. */
+    touch-action: manipulation;
     transition: border-color 0.15s ease, background 0.15s ease;
   }
-  .chip:hover {
-    border-color: var(--accent);
+  /* Hover style only where a real pointer exists. On touch (iOS especially) a
+     :hover style can make the first tap apply hover instead of firing the
+     click - which is why the mode chips did "nothing" on a phone. */
+  @media (hover: hover) {
+    .chip:hover {
+      border-color: var(--accent);
+    }
   }
   .chip[aria-pressed='true'] {
     border-color: var(--accent);
