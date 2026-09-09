@@ -1,0 +1,50 @@
+name: Weekly analytics report
+
+# Emails David a weekly Cloudflare Web Analytics digest (via Resend).
+# The work is done by scripts/weekly-report.mjs.
+#
+# One-time setup - add these as GitHub repo secrets
+# (Settings -> Secrets and variables -> Actions -> New repository secret):
+#   CF_API_TOKEN              Cloudflare API token with Account > Account Analytics > Read
+#   CF_ACCOUNT_ID             Cloudflare account ID (Dashboard -> any domain -> right sidebar)
+#   CF_WEB_ANALYTICS_SITE_TAG The Web Analytics "site tag" (Web Analytics -> your site ->
+#                             Manage site / JS snippet; it's the `token` value)
+#   RESEND_API_KEY            Same key the contact form uses
+#   REPORT_TO                 Inbox to receive the digest
+#   REPORT_FROM               (optional) verified Resend sender; omit to use Resend's
+#                             shared onboarding sender until a domain is verified
+#
+# Prerequisite: Cloudflare Web Analytics must be enabled for davidgoodloe.ai and the
+# beacon deployed (set PUBLIC_CF_BEACON_TOKEN in the Cloudflare Pages build env) so
+# there is data to report.
+#
+# Note: GitHub pauses scheduled workflows after ~60 days with no repo activity; a
+# push (or a manual run below) re-arms it.
+
+on:
+  schedule:
+    # 13:00 UTC every Monday (~8am US Eastern) - covers the prior 7 days.
+    - cron: '0 13 * * 1'
+  workflow_dispatch: {}   # allow manual runs from the Actions tab
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Send weekly analytics report
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_WEB_ANALYTICS_SITE_TAG: ${{ secrets.CF_WEB_ANALYTICS_SITE_TAG }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          REPORT_FROM: ${{ secrets.REPORT_FROM }}
+        run: node scripts/weekly-report.mjs

@@ -6,10 +6,29 @@ import { ClientRouter, fade } from 'astro:transitions';
 interface Props {
   title?: string;
   description?: string;
+  /** Path (relative to the site) of the social share image. Defaults to the brand card. */
+  ogImage?: string;
   wide?: boolean;
 }
 
-const { title = 'David Goodloe', description, wide = false } = Astro.props;
+const {
+  title = 'David Goodloe',
+  description,
+  ogImage = '/og-image.jpg',
+  wide = false,
+} = Astro.props;
+
+// Site-wide default description (David's own words, from the home bio) used for
+// SEO + social previews on any page that does not pass its own.
+const DEFAULT_DESCRIPTION =
+  'David Goodloe - working at the juncture of technology, scientific research, energy, ' +
+  'sustainability, construction, software, and AI. Rock climber, mountaineer, snowboarder, ' +
+  'reader, and traveler.';
+const metaDescription = description ?? DEFAULT_DESCRIPTION;
+
+// Absolute URLs for canonical + social tags (Astro.site is set in astro.config).
+const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.href;
+const ogImageURL = Astro.site ? new URL(ogImage, Astro.site).href : ogImage;
 
 // Normalize path (strip trailing slash) for active-nav matching.
 const path = Astro.url.pathname.replace(/\/+$/, '') || '/';
@@ -28,6 +47,47 @@ const isActive = (href: string) =>
 // "Keep exploring" loops through the nav in order (Home -> Work -> ... -> About -> Home).
 const currentIndex = nav.findIndex((n) => isActive(n.href));
 const nextPage = currentIndex >= 0 ? nav[(currentIndex + 1) % nav.length] : null;
+
+// --- Structured data (JSON-LD) ---
+// Helps search + AI answer engines (ChatGPT, Perplexity, Google AI Overviews)
+// reliably identify who David is. Facts here are David's to confirm/extend.
+//   [TODO: David confirm] - LinkedIn / X profile URLs to add to `sameAs` below,
+//   and whether the employer name/URL should read differently.
+const siteUrl = Astro.site?.href.replace(/\/$/, '') ?? 'https://davidgoodloe.ai';
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'David Goodloe',
+  url: siteUrl + '/',
+  image: ogImageURL,
+  jobTitle: 'Director, BranchRegenerate™ Business Unit',
+  worksFor: {
+    '@type': 'Organization',
+    name: 'Branch Technology',
+    url: 'https://www.branch.technology',
+  },
+  homeLocation: {
+    '@type': 'Place',
+    name: 'Chattanooga, Tennessee',
+  },
+  knowsAbout: ['Artificial Intelligence', 'Software Development', 'DevOps', 'Sustainability'],
+  sameAs: [
+    'https://github.com/davidgoodloe',
+    'https://www.goodreads.com/user/show/203579059-david-goodloe',
+    // [TODO: David confirm] - add LinkedIn + X (Twitter) profile URLs here.
+  ],
+};
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'David Goodloe',
+  url: siteUrl + '/',
+};
+
+// Cloudflare Web Analytics (cookieless). The beacon renders only when the token
+// is set as a build env var (PUBLIC_CF_BEACON_TOKEN) in Cloudflare Pages - never
+// hardcoded here. No token -> no script -> nothing to track.
+const cfBeaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 ---
 
 <!doctype html>
@@ -43,8 +103,30 @@ const nextPage = currentIndex >= 0 ? nav[(currentIndex + 1) % nav.length] : null
       href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap"
     />
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
-    {Astro.site && <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site).href} />}
+    <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonicalURL} />
+
+    {/* Open Graph - rich previews on LinkedIn, iMessage, Slack, Facebook */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="David Goodloe" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="David Goodloe - davidgoodloe.ai" />
+    <meta property="og:locale" content="en_US" />
+
+    {/* Twitter / X card */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    {/* Structured data for search + AI answer engines */}
+    <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
     {
       /* Home is the entry to the Home<->About portrait morph. Prefetch the About
          cluster images here (low priority) so the two side photos are already cached
@@ -96,6 +178,16 @@ const nextPage = currentIndex >= 0 ? nav[(currentIndex + 1) % nav.length] : null
       </footer>
     </div>
     {import.meta.env.DEV && <EditMode />}
+    {
+      /* Cloudflare Web Analytics beacon - cookieless, only when a token is configured. */
+      cfBeaconToken && (
+        <script
+          defer
+          src="https://static.cloudflareinsights.com/beacon.min.js"
+          data-cf-beacon={JSON.stringify({ token: cfBeaconToken })}
+        />
+      )
+    }
     <script>
       // The header persists across view transitions, so its server-rendered
       // aria-current goes stale - refresh the active nav link on every navigation.

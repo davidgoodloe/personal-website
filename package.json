@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "astro dev",
     "fetch:goodreads": "node scripts/goodreads.mjs",
+    "og": "node scripts/og-image.mjs",
     "build": "node scripts/goodreads.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro"
@@ -14,6 +15,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
     "astro": "^5.0.0",
     "sharp": "^0.34.0"
   }

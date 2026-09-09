@@ -1,0 +1,40 @@
+# davidgoodloe.ai - open to search engines and AI answer engines alike.
+# The whole site is public and meant to be found (and cited).
+
+User-agent: *
+Allow: /
+
+# Explicitly welcome the major AI / answer-engine crawlers so this site can be
+# read and cited by them (AEO). Listed for clarity; the wildcard above already
+# permits them.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://davidgoodloe.ai/sitemap-index.xml
