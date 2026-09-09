@@ -14,9 +14,9 @@ name: Weekly analytics report
 #   REPORT_FROM               (optional) verified Resend sender; omit to use Resend's
 #                             shared onboarding sender until a domain is verified
 #
-# Prerequisite: Cloudflare Web Analytics must be enabled for davidgoodloe.ai and the
-# beacon deployed (set PUBLIC_CF_BEACON_TOKEN in the Cloudflare Pages build env) so
-# there is data to report.
+# Prerequisite: Cloudflare Web Analytics is enabled for davidgoodloe.ai (automatic
+# edge-side setup, since the domain is proxied through Cloudflare) so there is data
+# to report - no beacon/snippet needed.
 #
 # Note: GitHub pauses scheduled workflows after ~60 days with no repo activity; a
 # push (or a manual run below) re-arms it.

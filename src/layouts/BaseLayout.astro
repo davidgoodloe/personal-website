@@ -83,11 +83,6 @@ const websiteSchema = {
   name: 'David Goodloe',
   url: siteUrl + '/',
 };
-
-// Cloudflare Web Analytics (cookieless). The beacon renders only when the token
-// is set as a build env var (PUBLIC_CF_BEACON_TOKEN) in Cloudflare Pages - never
-// hardcoded here. No token -> no script -> nothing to track.
-const cfBeaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
 ---
 
 <!doctype html>
@@ -178,16 +173,6 @@ const cfBeaconToken = import.meta.env.PUBLIC_CF_BEACON_TOKEN;
       </footer>
     </div>
     {import.meta.env.DEV && <EditMode />}
-    {
-      /* Cloudflare Web Analytics beacon - cookieless, only when a token is configured. */
-      cfBeaconToken && (
-        <script
-          defer
-          src="https://static.cloudflareinsights.com/beacon.min.js"
-          data-cf-beacon={JSON.stringify({ token: cfBeaconToken })}
-        />
-      )
-    }
     <script>
       // The header persists across view transitions, so its server-rendered
       // aria-current goes stale - refresh the active nav link on every navigation.
