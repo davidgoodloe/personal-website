@@ -7,8 +7,8 @@ name: Weekly analytics report
 # (Settings -> Secrets and variables -> Actions -> New repository secret):
 #   CF_API_TOKEN              Cloudflare API token with Account > Account Analytics > Read
 #   CF_ACCOUNT_ID             Cloudflare account ID (Dashboard -> any domain -> right sidebar)
-#   CF_WEB_ANALYTICS_SITE_TAG The Web Analytics "site tag" (Web Analytics -> your site ->
-#                             Manage site / JS snippet; it's the `token` value)
+#   CF_WEB_ANALYTICS_SITE_TAG (optional) only needed if the account has more than one Web
+#                             Analytics site; a single site (davidgoodloe.ai) needs no tag
 #   RESEND_API_KEY            Same key the contact form uses
 #   REPORT_TO                 Inbox to receive the digest
 #   REPORT_FROM               (optional) verified Resend sender; omit to use Resend's

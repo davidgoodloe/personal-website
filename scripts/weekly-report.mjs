@@ -10,8 +10,10 @@
 //   CF_API_TOKEN            (required) Cloudflare API token, permission:
 //                                      Account > Account Analytics > Read
 //   CF_ACCOUNT_ID           (required) Cloudflare account ID
-//   CF_WEB_ANALYTICS_SITE_TAG (required) the Web Analytics "site tag" (from the
-//                                      Web Analytics site's JS snippet / settings)
+//   CF_WEB_ANALYTICS_SITE_TAG (optional) the Web Analytics "site tag". Only needed
+//                                      if the account has more than one Web Analytics
+//                                      site; with a single site (davidgoodloe.ai) the
+//                                      account filter alone already scopes the data.
 //   RESEND_API_KEY          (required) same key the contact form uses
 //   REPORT_TO               (required) inbox to receive the digest
 //   REPORT_FROM             (optional) verified Resend sender; defaults to Resend's
@@ -38,9 +40,9 @@ function requireEnv(name, value) {
 }
 requireEnv('CF_API_TOKEN', CF_API_TOKEN);
 requireEnv('CF_ACCOUNT_ID', CF_ACCOUNT_ID);
-requireEnv('CF_WEB_ANALYTICS_SITE_TAG', CF_WEB_ANALYTICS_SITE_TAG);
 requireEnv('RESEND_API_KEY', RESEND_API_KEY);
 requireEnv('REPORT_TO', REPORT_TO);
+// CF_WEB_ANALYTICS_SITE_TAG is optional - only needed to disambiguate multiple sites.
 
 // --- Date range: the 7 full days ending yesterday (UTC) ---
 const now = new Date();
@@ -53,8 +55,10 @@ const rangeLabel = `${dayLabel(start)} to ${dayLabel(new Date(end.getTime() - 86
 
 // --- GraphQL: totals, top pages, referrers, countries, daily trend ---
 // The filter is inlined as a literal (dates are ISO, siteTag is a known tag) to
-// avoid depending on the exact GraphQL input-type name for typed variables.
-const filterLiteral = `{ AND: [ { datetime_geq: "${iso(start)}", datetime_lt: "${iso(end)}" }, { siteTag: "${CF_WEB_ANALYTICS_SITE_TAG}" } ] }`;
+// avoid depending on the exact GraphQL input-type name for typed variables. The
+// siteTag clause is only added when provided (a single-site account needs no tag).
+const siteTagClause = CF_WEB_ANALYTICS_SITE_TAG ? `, { siteTag: "${CF_WEB_ANALYTICS_SITE_TAG}" }` : '';
+const filterLiteral = `{ AND: [ { datetime_geq: "${iso(start)}", datetime_lt: "${iso(end)}" }${siteTagClause} ] }`;
 const QUERY = `
 query Weekly {
   viewer {
