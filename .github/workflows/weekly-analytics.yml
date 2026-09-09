@@ -25,7 +25,12 @@ on:
   schedule:
     # 13:00 UTC every Monday (~8am US Eastern) - covers the prior 7 days.
     - cron: '0 13 * * 1'
-  workflow_dispatch: {}   # allow manual runs from the Actions tab
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the report to the log instead of emailing it'
+        type: boolean
+        default: false
 
 jobs:
   send-report:
@@ -47,4 +52,5 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           REPORT_TO: ${{ secrets.REPORT_TO }}
           REPORT_FROM: ${{ secrets.REPORT_FROM }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
         run: node scripts/weekly-report.mjs
