@@ -12,12 +12,11 @@
   Cross-Origin-Opener-Policy: same-origin
 
 # Keep PERSONAL photos out of Google Images (pages stay indexed; only their
-# images are excluded). Personal-photo pages = Home, About, Adventure. The Work
-# and Learning pages (professional project images + certs) stay image-indexable.
-# noimageindex applies to the images embedded on each page below.
+# images are excluded). Blocked = Home (David + Lauren) and Adventure (travel/
+# activity photos). NOT blocked: About (solo portraits of David - fine to surface),
+# Work + Learning (professional project images, certs). noimageindex applies to
+# the images embedded on each page below.
 /
-  X-Robots-Tag: noimageindex
-/about/*
   X-Robots-Tag: noimageindex
 /adventure/*
   X-Robots-Tag: noimageindex
