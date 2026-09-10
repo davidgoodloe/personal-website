@@ -1,0 +1,12 @@
+# Security response headers for all routes (Cloudflare Pages honors this file).
+# Kept conservative on purpose - none of these can break a static site.
+# A Content-Security-Policy is intentionally NOT set here: Cloudflare injects its
+# Web Analytics beacon at the edge, so a CSP must be added + tested against the
+# live site (not local preview) to avoid blocking that beacon or view transitions.
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000
+  Cross-Origin-Opener-Policy: same-origin
