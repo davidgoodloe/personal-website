@@ -79,9 +79,14 @@ const countryName = (code) => {
 // The filter is inlined as a literal (dates are ISO, siteTag is a known tag) to
 // avoid depending on the exact GraphQL input-type name for typed variables. The
 // siteTag clause is only added when provided (a single-site account needs no tag).
+// Scope to THIS site's hostnames. The Cloudflare GraphQL query runs at the
+// account level, so if the account has more than one Web Analytics site (e.g.
+// cragprints.com), their data would otherwise merge in. Filtering by requestHost
+// keeps the report to davidgoodloe.ai only - no site tag needed.
+const hostClause = `, { requestHost_in: [${OWN_HOSTS.map((h) => `"${h}"`).join(', ')}] }`;
 const siteTagClause = CF_WEB_ANALYTICS_SITE_TAG ? `, { siteTag: "${CF_WEB_ANALYTICS_SITE_TAG}" }` : '';
 const rangeFilter = (from, to) =>
-  `{ AND: [ { datetime_geq: "${iso(from)}", datetime_lt: "${iso(to)}" }${siteTagClause} ] }`;
+  `{ AND: [ { datetime_geq: "${iso(from)}", datetime_lt: "${iso(to)}" }${hostClause}${siteTagClause} ] }`;
 const curFilter = rangeFilter(start, end);
 const prevFilter = rangeFilter(prevStart, start);
 
