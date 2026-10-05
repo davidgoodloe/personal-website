@@ -1,0 +1,47 @@
+name: Weekly analytics report (cragprints.com)
+
+# Emails David a weekly Cloudflare Web Analytics digest for cragprints.com, using
+# the SAME scripts/weekly-report.mjs as the davidgoodloe.ai report - just pointed
+# at a different hostname via SITE_HOSTS. Both sites live on the same Cloudflare
+# account, so this reuses the same secrets (CF_API_TOKEN, CF_ACCOUNT_ID,
+# RESEND_API_KEY, REPORT_TO). The report query filters by requestHost, so the two
+# reports never mix.
+#
+# Sends from reports@davidgoodloe.ai (the Resend-verified domain) with a
+# cragprints-labeled From name. To send from an @cragprints.com address instead,
+# verify cragprints.com in Resend and change REPORT_FROM below.
+
+on:
+  schedule:
+    # 13:05 UTC every Monday (5 min after the davidgoodloe.ai report).
+    - cron: '5 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print the report to the log instead of emailing it'
+        type: boolean
+        default: false
+
+jobs:
+  send-report:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Send weekly analytics report (cragprints.com)
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REPORT_TO: ${{ secrets.REPORT_TO }}
+          REPORT_FROM: 'Cragprints.com Report <reports@davidgoodloe.ai>'
+          SITE_LABEL: cragprints.com
+          SITE_HOSTS: cragprints.com,www.cragprints.com
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: node scripts/weekly-report.mjs

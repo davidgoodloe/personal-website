@@ -19,6 +19,9 @@
 //   REPORT_FROM             (optional) verified Resend sender; defaults to Resend's
 //                                      shared onboarding sender until a domain is verified
 //   SITE_LABEL              (optional) display name in the email (default davidgoodloe.ai)
+//   SITE_HOSTS              (optional) comma-separated hostnames to report on
+//                                      (default davidgoodloe.ai,www.davidgoodloe.ai). Set this
+//                                      to run the same script for another site on the account.
 //   DRY_RUN                 (optional) if set (not "" / "0" / "false"), print the report
 //                                      to stdout instead of emailing it - for testing.
 //
@@ -35,9 +38,15 @@ const {
 } = process.env;
 const DRY_RUN = !!process.env.DRY_RUN && !['', '0', 'false'].includes(process.env.DRY_RUN);
 
-// The site's own hostnames - traffic "referred" by these is internal navigation,
-// not outside discovery, so it's separated out of the referrers list.
-const OWN_HOSTS = ['davidgoodloe.ai', 'www.davidgoodloe.ai'];
+// The site's own hostnames (SITE_HOSTS env, comma-separated; defaults to
+// davidgoodloe.ai). Used two ways: (1) the GraphQL query filters requestHost to
+// these so a multi-site Cloudflare account doesn't bleed other sites in; (2)
+// referrers from these hosts are internal navigation, not outside discovery.
+// A second workflow sets SITE_HOSTS=cragprints.com,... to report on that site.
+const OWN_HOSTS = (process.env.SITE_HOSTS || 'davidgoodloe.ai,www.davidgoodloe.ai')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 function requireEnv(name, value) {
   if (!value) {
