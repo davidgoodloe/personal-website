@@ -86,6 +86,20 @@ const projects = [
     desc: "A fully automated AI news brief that lands in my inbox at 7am every morning without me lifting a finger. A Claude Code routine runs in the cloud on a cron, researches the last day or two of AI news with live web search, writes a <a href='/work/ai-brief-sample.html' target='_blank' rel='noopener noreferrer'>5-7 minute read</a> organized around my interests, compares and deduplicates it against the previous days' briefs so nothing repeats, then commits and pushes the file to a GitHub repo.\n\nBut the routine's sandbox is network-locked and can't actually send mail, so the git push trips a GitHub Action running on open network that renders the markdown to HTML and sends it through Resend's API to my email. All the editorial rules live in a CLAUDE.md that the routine reads fresh on every run, so tweaking what it covers, how it writes, and who it addresses is just a matter of editing that one file.\n\nIn fact, if you'd like to sign up for it and stay up to date on the latest in AI, click the button above! :)",
     cta: { label: 'Sign up', href: '/work/ai-brief-signup.html' },
   },
+  {
+    title: 'CragPrints',
+    tag: 'Venture',
+    domain: 'venture',
+    images: [
+      { src: '/work/cragprints.jpg', alt: 'Natural CragPrints tee with a line drawing of El Capitan on the back', fit: 'contain' },
+      { src: '/work/cragprints-2.jpg', alt: 'CragPrints logo and wordmark beside a tee printed with El Capitan', fit: 'contain' },
+      { src: '/work/cragprints-3.jpg', alt: 'Black CragPrints tee with a light line drawing of Half Dome on the back', fit: 'contain' },
+    ],
+    // DRAFT copy (David to edit/sign off) - drawn from cragprints.com/about and the CragPrints STATUS.md.
+    desc: "My solo climbing-apparel venture. Climbers have great appreciation for the rock formations their routes and problems are found on. CragPrints lets them wear their sends and honor the natural places where they find adventure. Every design is a detailed line drawing of a real rock formation - its cracks, ledges, and holds - printed on the back of a shirt, with the climb's coordinates on the front as a subtle nod to where it can be found.\n\nThere are two lines: Our Climbs, a curated collection of renowned boulders, routes, big walls, and peaks, and Your Send, where you upload a photo of your own project or objective and get it drawn in the same style, with multiple versions to choose from and fine-tune.\n\nThe whole store is one Astro app running on a Cloudflare Worker, and the store itself is the design builder. Our Climbs designs come out of a Python pipeline that turns reference photos into line art with an AI image model, then lays out print-ready files for each garment. Your Send runs the same idea live: the customer's photo is drawn by AI, and their own browser renders the print file, so the preview is exactly what gets printed.\n\nNothing is pre-made. At checkout, the product is created on the fly through Fourthwall's API, and Fourthwall handles payment, printing, and shipping. A small admin dashboard tracks orders and sales by channel, and lets me publish customers' designs into the collection.",
+    // Label is a functional placeholder - David to confirm.
+    cta: { label: 'Visit CragPrints', href: 'https://cragprints.com/dg' },
+  },
 ];
 
 // Any tile with a cta gets a gold outline; show the legend below the subheader.
@@ -106,7 +120,7 @@ const hasCta = projects.some((p) => p.cta);
       hasCta && (
         <p class="work-legend">
           <span class="legend-swatch" aria-hidden="true" />
-          <em>= Click in for a signup link</em>
+          <em>= Click in to link out</em>
         </p>
       )
     }
