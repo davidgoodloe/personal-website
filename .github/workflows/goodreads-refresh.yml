@@ -1,7 +1,7 @@
-name: Fortnightly Goodreads refresh
+name: Daily Goodreads refresh
 
 # Triggers a fresh Cloudflare Pages build so scripts/goodreads.mjs re-pulls
-# David's latest "read" shelf and rebuilds the site. The build itself does the
+# David's latest "read" and "currently-reading" shelves and rebuilds the site. The build does the
 # fetching; this workflow only pings the Cloudflare Pages "deploy hook" URL on a
 # schedule (and on demand).
 #
@@ -16,8 +16,8 @@ name: Fortnightly Goodreads refresh
 
 on:
   schedule:
-    # 09:00 UTC on the 1st and 15th of every month (~fortnightly).
-    - cron: '0 9 1,15 * *'
+    # Daily at 09:00 UTC, so the home page's "currently reading" line keeps up with Goodreads.
+    - cron: '0 9 * * *'
   workflow_dispatch: {}   # allow manual runs from the Actions tab
 
 jobs:

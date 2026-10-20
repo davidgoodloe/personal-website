@@ -1,8 +1,9 @@
-// Build-time refresh of David's Goodreads "read" shelf.
+// Build-time refresh of David's Goodreads shelves: "read" (the Learning page grid) and
+// "currently-reading" (the Reading line in the home page's Currently list).
 //
 // Runs as the first step of `npm run build` (see package.json), so every build -
-// including the scheduled fortnightly rebuild on Cloudflare Pages - pulls the latest
-// shelf + covers. RESILIENT BY DESIGN: any failure (Goodreads down, feed empty,
+// including the scheduled daily rebuild on Cloudflare Pages - pulls the latest
+// shelves + covers. RESILIENT BY DESIGN: any failure (Goodreads down, feed empty,
 // network error) logs a warning and exits 0 WITHOUT touching the committed data, so
 // the build always succeeds using the last-known books. Covers are downloaded
 // incrementally (existing files reused; only new ones fetched) and orphans pruned.
@@ -18,6 +19,7 @@ const USER = '203579059';
 const OUT_IMG = 'public/books';
 const OUT_DATA = 'src/data';
 const DATA_FILE = join(OUT_DATA, 'books.json');
+const NOW_FILE = join(OUT_DATA, 'reading-now.json');
 const H = { 'User-Agent': 'Mozilla/5.0 (personal-site build)', 'Cache-Control': 'no-cache' };
 const FEED = (page) =>
   `https://www.goodreads.com/review/list_rss/${USER}?shelf=read&per_page=100&page=${page}&_=${Date.now()}`;
@@ -58,6 +60,7 @@ async function fetchAllItems() {
   return items;
 }
 
+async function refreshRead() {
 try {
   const items = await fetchAllItems();
   if (!items.length) throw new Error('feed returned 0 items');
@@ -118,5 +121,34 @@ try {
 } catch (e) {
   const have = existsSync(DATA_FILE);
   console.warn(`Goodreads refresh skipped: ${e.message}. ${have ? 'Using committed books.json.' : 'No committed data - grid may be empty.'}`);
-  process.exit(0); // never fail the build
 }
+}
+
+// Currently-reading shelf -> src/data/reading-now.json (home page). An empty shelf is
+// real (nothing on the go) and writes [], which hides the line; a failed fetch keeps
+// the committed file.
+async function refreshNow() {
+  try {
+    const url = `https://www.goodreads.com/review/list_rss/${USER}?shelf=currently-reading&_=${Date.now()}`;
+    const res = await fetch(url, { headers: H, signal: AbortSignal.timeout(20000) });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const xml = await res.text();
+    if (!xml.includes('<channel>')) throw new Error('not an RSS feed');
+    const now = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(([, b]) => ({
+      id: field(b, 'book_id'),
+      // "The Shadow of What Was Lost (The Licanius Trilogy, #1)" -> drop the series tag
+      title: field(b, 'title').replace(/\s*\([^()]*#[^()]*\)\s*$/, ''),
+      author: field(b, 'author_name'),
+      url: `https://www.goodreads.com/book/show/${field(b, 'book_id')}`,
+    }));
+    mkdirSync(OUT_DATA, { recursive: true });
+    writeFileSync(NOW_FILE, JSON.stringify(now, null, 2));
+    console.log(`Goodreads: currently reading ${now.length ? now.map((b) => b.title).join(', ') : 'nothing'}.`);
+  } catch (e) {
+    console.warn(`Currently-reading refresh skipped: ${e.message}. ${existsSync(NOW_FILE) ? 'Using committed reading-now.json.' : ''}`);
+  }
+}
+
+await refreshRead();
+await refreshNow();
+process.exit(0); // never fail the build
