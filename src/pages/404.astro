@@ -1,19 +1,18 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import Shell from '../layouts/Shell.astro';
 ---
 
-<BaseLayout title="Page not found">
-  <section class="notfound">
-    <h1>Looks like something's off...</h1>
-    <p>Go back to <a href="/">David's amazing website</a> ;)</p>
-  </section>
-</BaseLayout>
+<Shell title="Page not found">
+  <main class="notfound">
+    <div class="wrap">
+      <h1>Looks like something's off...</h1>
+      <p>Go back to <a href="/">David's amazing website</a> ;)</p>
+    </div>
+  </main>
+</Shell>
 
 <style>
-  .notfound {
-    padding: 1.5rem 0 3rem;
-  }
-  .notfound p {
-    font-size: 1.15rem;
-  }
+  .notfound { min-height: 100vh; display: grid; align-items: center; }
+  .notfound h1 { font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: -.03em; line-height: 1.1; margin: 0 0 16px; }
+  .notfound p { font-size: 1.15rem; }
 </style>

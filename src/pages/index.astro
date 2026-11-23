@@ -1,189 +1,310 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-// David's Goodreads "currently reading" shelf, refreshed at build (scripts/goodreads.mjs).
+// One page, five stops up the mountain. The 3D model (public/js/journey3d.js) follows
+// the route as you scroll; each <section data-camp> is a stop.
+import Shell from '../layouts/Shell.astro';
+import CountryMap from '../components/CountryMap.astro';
+import books from '../data/books.json';
 import readingNow from '../data/reading-now.json';
+import certs from '../data/certs.json';
+
+const YEAR = new Date().getFullYear();
+
+// "Currently - Reading": the Goodreads currently-reading shelf (refreshed at build).
+// SERIES shows a series name in place of the book title, keyed by Goodreads book id.
+const SERIES: Record<string, string> = { '22878967': 'The Licanius Trilogy' };
+const now = readingNow[0];
+const reading = now ? { url: now.url, label: SERIES[now.id] ?? now.title } : null;
+
+// Reading shelf: this year's books in one row; "The full shelf" opens the last ~5 years.
+const dated = books.filter((b) => b.cover && b.year);
+const ROW_YEAR = dated.some((b) => b.year === YEAR) ? YEAR : Math.max(...dated.map((b) => b.year));
+const ROW = dated.filter((b) => b.year === ROW_YEAR);
+const FLOOR_YEAR = YEAR - 4; // a lone year just below the floor folds up into it
+const shown = dated.filter((b) => b.year >= FLOOR_YEAR - 1);
+const shelfYear = (b) => Math.max(b.year, FLOOR_YEAR);
+const SHELF = [...new Set(shown.map(shelfYear))]
+  .sort((a, b) => b - a)
+  .map((year) => ({ year, books: shown.filter((b) => shelfYear(b) === year) }));
+const bookTitle = (b) => `${b.title}${b.author ? ` - ${b.author}` : ''}`;
+const bookAlt = (b) => `${b.title}${b.author ? `, by ${b.author}` : ''}`;
+
+const CERTS = [...certs].reverse();
+
+// Interactive map: Travel + Climbing shade countries; Mountaineering + Snowboarding are pins.
+const MAP = {
+  visited: ['us', 'pr', 'bs', 'es', 'gb', 'gr', 'cz', 'fr', 'nl', 'mx', 'au', 'br', 'no'],
+  climbed: ['us', 'mx', 'br', 'no'],
+  mountaineering: [
+    { name: 'Mount Baker', lat: 48.7767, lng: -121.8144, status: 'summit', nudge: [18, 16] },
+    { name: 'Mount Shuksan', lat: 48.8306, lng: -121.6022, status: 'summit' },
+    { name: 'Mount Olympus', lat: 47.8014, lng: -123.7065, status: 'summit', nudge: [12, 0] },
+    { name: 'Mount Rainier', lat: 46.8523, lng: -121.7603, status: 'attempt' },
+    { name: 'Midsummer Dome, WY', lat: 42.77, lng: -109.21, status: 'summit' },
+  ],
+  snowboarding: [
+    { name: 'Sugar Mountain, NC', lat: 36.1329, lng: -81.8637 },
+    { name: 'Beech Mountain, NC', lat: 36.2019, lng: -81.8873 },
+    { name: 'Appalachian Ski Mtn, NC', lat: 36.1586, lng: -81.6936 },
+    { name: 'Cataloochee, NC', lat: 35.5945, lng: -83.0876 },
+    { name: 'Wolf Ridge, NC', lat: 35.9758, lng: -82.6361 },
+    { name: 'Snowshoe Mountain, WV', lat: 38.4121, lng: -79.9953 },
+    { name: 'Copper Mountain, CO', lat: 39.5022, lng: -106.1517 },
+    { name: 'Keystone, CO', lat: 39.6084, lng: -105.9437 },
+    { name: 'Breckenridge, CO', lat: 39.4783, lng: -106.0667 },
+    { name: 'Vail, CO', lat: 39.6061, lng: -106.355 },
+    { name: 'Beaver Creek, CO', lat: 39.6042, lng: -106.5165 },
+    { name: 'Bridger Bowl, MT', lat: 45.8179, lng: -110.9066 },
+  ],
+};
 ---
 
-<BaseLayout title="David Goodloe">
-  <section class="intro">
-    {/* Name lives in the header wordmark (enlarged on home); keep an h1 for a11y/SEO. */}
-    <h1 class="visually-hidden">David Goodloe</h1>
+<Shell>
+<canvas id="terrain" role="img" aria-label="3D contour model of a mountain with a climbing route. Scrolling moves along the route; drag to rotate."></canvas>
+<a class="skip" href="#camp-1">Skip to content</a>
 
-    <p class="bio-lead">
-      Hi, I'm David. I am a Nashville native who now lives and works in Chattanooga with my
-      wife Lauren. I have worked in technology, science, energy, sustainability, defense-tech,
-      construction, space, software, and AI. I'm an enthusiastic rock climber,
-      mountaineer, and snowboarder, a washed-up college tennis player rediscovering the sport
-      of his youth, an avid fiction reader, and - alongside Lauren - an aspiring world traveler.
-    </p>
+<header class="top"><div class="wrap">
+  <a class="wordmark" href="/">David Goodloe</a>
+  <nav class="main" aria-label="Camps"><a href="#camp-1">Hello</a><a href="#camp-2">Portfolio</a><a href="#camp-3">Adventure</a><a href="#camp-4">Learning</a><a href="#camp-5">About</a></nav>
+</div></header>
 
-    {/* The whole cluster is one shared element, so all three photos glide together
-        (translate + crossfade) into the About cluster - naming only the lead left the
-        two sides ghosting between the clusters' different vertical positions. */}
-    <div class="photo-cluster" transition:name="hero-cluster">
-      <img
-        class="pc-lead"
-        src="/home-portrait.jpg"
-        alt="David and Lauren at a mountain overlook above a valley"
-        width="1300"
-        height="1733"
-      />
-      <div class="pc-sides">
-        <img
-          class="pc-side"
-          src="/home-portrait-2.jpg"
-          alt="David and Lauren on a snowy mountain summit"
-          width="1300"
-          height="979"
-        />
-        <img
-          class="pc-side"
-          src="/home-portrait-3.jpg"
-          alt="David and Lauren rock climbing on a cliff"
-          width="1300"
-          height="1733"
-        />
+<nav class="rail" aria-label="The climb">
+  <a class="rail-name" href="#top">David Goodloe</a>
+  <ol>
+    <li><a href="#camp-1"><span>Trailhead</span><em>Hello</em></a></li>
+    <li><a href="#camp-2"><span>Lower glacier</span><em>Portfolio</em></a></li>
+    <li><a href="#camp-3"><span>Upper glacier</span><em>Adventure</em></a></li>
+    <li><a href="#camp-4"><span>Southeast Ridge</span><em>Learning</em></a></li>
+    <li><a href="#camp-5"><span>Summit</span><em>Contact &amp; About</em></a></li>
+  </ol>
+</nav>
+
+<main id="main"><span id="top"></span>
+<section class="hero" aria-label="Introduction">
+  <div class="hero-copy"><div class="wrap">
+    <h1>David Goodloe</h1>
+    <a class="start" href="#camp-1">Start the climb <span class="chev" aria-hidden="true">↓</span></a>
+  </div></div>
+  <p class="drag-hint" id="drag-hint"><svg viewBox="0 0 26 14" aria-hidden="true"><path d="M2 7 H24 M6 3 L2 7 L6 11 M20 3 L24 7 L20 11" /></svg>Drag to rotate</p>
+</section>
+<div class="content">
+
+<!-- CAMP 1 -->
+<section class="page" id="camp-1" data-camp="0"><div class="page-inner">
+    <p class="campline">Trailhead - 3,990 ft</p>
+    <div class="hello">
+    <div class="cluster hello-photos">
+      <img class="lead" src="/home-portrait.jpg" alt="David and Lauren at a mountain overlook above a valley" />
+      <div class="side"><img src="/home-portrait-2.jpg" alt="David and Lauren on a snowy mountain summit" /><img src="/home-portrait-3.jpg" alt="David and Lauren rock climbing on a cliff" /></div>
+    </div>
+    <p class="bio">Hi, I'm David. I'm a Nashville native now living and working in Chattanooga. I run technology businesses focused on energy, defense, construction, space, and AI. I'm a rock climber, mountaineer, and snowboarder, a washed-up college tennis player rediscovering the sport of his youth, an avid fiction reader, and an aspiring world traveler.</p>
+    <h3>Currently</h3>
+    <dl class="currently">
+      <dt>Working</dt><dd>at <a href="https://branchtechnology.com/">Branch Technology</a></dd>
+      <dt>Building</dt><dd><a href="https://cragprints.com">CragPrints</a></dd>
+      {reading && <><dt>Reading</dt><dd><a href={reading.url}>{reading.label}</a></dd></>}
+      <dt>Competing</dt><dd><a href="https://app.utrsports.net/events/386332">Chattanooga UTR Flex League</a></dd>
+      <dt>Climbing</dt><dd><a href="https://www.mountainproject.com/route/113873272/dalai-lama">Dalai Lama, 5.12c</a></dd>
+    </dl>
+    <div class="sub">
+      <h3>Where you can find me</h3>
+      <ul class="elsewhere"><li><a href="https://www.linkedin.com/in/david--goodloe/">LinkedIn</a></li><li><a href="https://github.com/davidgoodloe">GitHub</a></li><li><a href="https://www.goodreads.com/user/show/203579059-david-goodloe">Goodreads</a></li><li><a href="https://cragprints.com">CragPrints</a></li><li><a href="https://www.mountainproject.com/user/201008756/david-goodloe">Mountain Project</a></li><li><a href="https://www.8a.nu/user/david-goodloe/sportclimbing">8a.nu</a></li><li><a href="https://app.utrsports.net/profiles/120574">UTR</a></li></ul>
+      <ul class="elsewhere contact-links"><li><a href="#camp-5">Email</a></li><li><a href="/david-goodloe-resume.pdf">Resume</a></li></ul>
+    </div>
+    </div>
+  </div>
+</section>
+<div class="window" aria-hidden="true"></div>
+
+<!-- CAMP 2 -->
+<section class="page" id="camp-2" data-camp="1"><div class="page-inner">
+    <p class="campline">Lower glacier - 6,969 ft</p>
+    <h2>Portfolio</h2>
+    <p class="muted">Products, projects, and tools I've built. Spanning a variety of industries, applications, and technologies</p>
+
+    <div class="items">
+      <div class="item"><div class="car" data-title="Advanced Concepts Team" tabindex="0" aria-label="Advanced Concepts Team photos - press Enter to enlarge"><div class="car-track"><img src="/work/robots.jpg" alt="Robotic 3D-printing cell extruding a freeform lattice" loading="lazy" /></div><button class="car-prev" type="button" aria-label="Previous photo">&#8249;</button><button class="car-next" type="button" aria-label="Next photo">&#8250;</button><span class="car-count"></span></div><div>
+    <p class="tag">Business</p>
+    <h3>Advanced Concepts Team</h3>
+    <p>I founded and led this business unit within Branch Technology, focused on securing and executing on federally funded technology development projects to apply Cellular Fabrication (C-Fab®) to a variety of challenges.</p>
+    <details><summary>More</summary><p>I've secured and delivered &gt;$15M in projects with several organizations:</p>
+    <ul class="orgs"><li>National Science Foundation (NSF)</li><li>US Air Force (USAF)</li><li>National Aeronautics and Space Administration (NASA)</li><li>US Army</li><li>Department of Defense (DoD / DoW) ESTCP</li><li>LaunchTN</li></ul></details>
+    
+    </div></div>
+
+    <div class="item"><div class="car" data-title="Funding-intelligence agent" tabindex="0" aria-label="Funding-intelligence agent photos - press Enter to enlarge"><div class="car-track"><img src="/work/funding-arch.jpg" alt="System diagram of the funding-intelligence agent: trigger, collect six federal sources, filter and rank, synthesize, deliver" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /><img src="/work/ai.jpg" alt="Weekly funding-intelligence report generated by the agent" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /></div><button class="car-prev" type="button" aria-label="Previous photo">&#8249;</button><button class="car-next" type="button" aria-label="Next photo">&#8250;</button><span class="car-count"></span></div><div>
+      <p class="tag">Software</p><h3>Funding-intelligence agent</h3>
+      <p>A looping agent that scans federal databases for open funding and technology development solicitations, ranks opportunities with Claude based on a custom-configured profile, and emails me a twice-weekly brief of opportunity recommendations for my specific profile.</p></div></div>
+
+    <div class="item"><div class="car" data-title="BranchRegenerate™" tabindex="0" aria-label="BranchRegenerate™ photos - press Enter to enlarge"><div class="car-track"><img src="/work/retrofit-render.jpg" alt="Render of two BranchRegenerate wall panels with window openings, one with a smooth finish and one with a brick-textured face" loading="lazy" /><img src="/work/retrofit-2.jpg" alt="The team at a full-scale BranchRegenerate retrofit demonstration" loading="lazy" /><img src="/work/retrofit-3.jpg" alt="Close-up of the 3D-printed insulating retrofit panels staged for installation" loading="lazy" /><img src="/work/retrofit.jpg" alt="BranchRegenerate insulating panels being installed on a building" loading="lazy" /><img src="/work/retrofit-6.jpg" alt="Concept render of a building half in original brick, half reclad with BranchRegenerate panels" loading="lazy" /></div><button class="car-prev" type="button" aria-label="Previous photo">&#8249;</button><button class="car-next" type="button" aria-label="Next photo">&#8250;</button><span class="car-count"></span></div><div>
+      <p class="tag">Buildings</p><h3>BranchRegenerate™</h3>
+      <p>A 3D-printed energy-efficient retrofit panel system whose backplane geometry mirrors the substrate surface, defined by a scan and then modeled and printed into the insulation.</p>
+      <details><summary>More</summary><p><a href="https://patents.google.com/patent/US12104393B2/en?q=(david+goodloe)">Patented the concept</a>, developed the technology, deployed the product, and am currently building the business unit as Director within Branch Technology</p></details></div></div>
+
+    <div class="item"><div class="car" data-title="3D-printing lunar structures for NASA" tabindex="0" aria-label="3D-printing lunar structures for NASA photos - press Enter to enlarge"><div class="car-track"><img src="/work/lunar.jpg" alt="3D-printed lunar solar tower render on the Moon" loading="lazy" /><img src="/work/nasa-4.jpg" alt="David standing beside the full-scale 3D-printed lattice tower in the workshop" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /><img src="/work/nasa-2.jpg" alt="Scale model of the lunar tower exhibited at the Kennedy Center" loading="lazy" /><img src="/work/nasa-3.jpg" alt="Structural render of the lunar tower lattice from the project video" loading="lazy" /><img src="/work/nasa-5.jpg" alt="Close-up of the woven 3D-printed lattice structure" loading="lazy" /><img src="/work/nasa-6.jpg" alt="Tall Lunar Tower Phase II proposal overview - NASA, Branch Technology, and Foster + Partners" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /></div><button class="car-prev" type="button" aria-label="Previous photo">&#8249;</button><button class="car-next" type="button" aria-label="Next photo">&#8250;</button><span class="car-count"></span></div><div>
+      <p class="tag">Space</p><h3>3D-printing lunar structures for NASA</h3>
+      <p>Principal Investigator on multiple NASA lunar 3D-printing construction projects, including a prototype for a 50-meter solar tower for the lunar south pole and a 3D printed habitat prototype.</p>
+      <details><summary>More</summary><p>I scoped and led the collaboration between Branch Technology, NASA, and world-renowned architecture firm, Foster + Partners.</p><p>Our team produced exhibits that showed the prototypes, both at Branch Technology HQ in Chattanooga, TN, as well as a globally-viewed, month-long exhibit at the Kennedy Center in Washington DC, and now permanently on display at Foster + Partners' HQ in London.</p></details></div></div>
+
+    <div class="item"><div class="car" data-title="BioWall" tabindex="0" aria-label="BioWall photos - press Enter to enlarge"><div class="car-track"><img src="/work/biowall.jpg" alt="Bio-derived 3D-printed wall lattice on display" loading="lazy" /><img src="/work/biowall-2.jpg" alt="Detail of the bio-derived 3D-printed wall panels" loading="lazy" /><img src="/work/biowall-3.jpg" alt="Bio-based foam and lattice panels during fabrication" loading="lazy" /></div><button class="car-prev" type="button" aria-label="Previous photo">&#8249;</button><button class="car-next" type="button" aria-label="Next photo">&#8250;</button><span class="car-count"></span></div><div>
+      <p class="tag">Materials</p><h3>BioWall</h3>
+      <p>Served as principal investigator for the development of a sustainable exterior wall system 3D-printed entirely from bio-derived materials for a $1.9M Army Construction Innovation program. Executed R&amp;D license for plant-based foam formulation from Oak Ridge National Lab.</p></div></div>
+
+    <div class="item"><div class="car" data-title="Daily AI brief" tabindex="0" aria-label="Daily AI brief photos - press Enter to enlarge"><div class="car-track"><img src="/work/ai-arch.jpg" alt="System architecture diagram of the AI news brief pipeline" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /><img src="/work/ai2.jpg" alt="Daily AI news brief email in the inbox" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /></div><button class="car-prev" type="button" aria-label="Previous photo">&#8249;</button><button class="car-next" type="button" aria-label="Next photo">&#8250;</button><span class="car-count"></span></div><div>
+      <p class="tag">Software</p><h3>Daily AI brief</h3>
+      <p>A fully automated AI news brief that lands in my inbox at 7am every morning without me lifting a finger. A Claude Code routine runs in the cloud on a cron, researches the last day or two of AI news with live web search, writes a <a href="/work/ai-brief-sample.html">5-7 minute read</a> organized around my interests, compares and deduplicates it against the previous days' briefs so nothing repeats, then commits and pushes the file to a GitHub repo.</p>
+      <details><summary>More</summary><p>But the routine's sandbox is network-locked and can't actually send mail, so the git push trips a GitHub Action running on open network that renders the markdown to HTML and sends it through Resend's API to my email. All the editorial rules live in a CLAUDE.md that the routine reads fresh on every run, so tweaking what it covers, how it writes, and who it addresses is just a matter of editing that one file.</p><p>In fact, if you'd like to sign up for it and stay up to date on the latest in AI, click the button below :)</p></details>
+      <a class="cta" href="/work/ai-brief-signup.html">Sign up</a></div></div>
+
+    <div class="item"><div class="car" data-title="CragPrints" tabindex="0" aria-label="CragPrints photos - press Enter to enlarge"><div class="car-track"><img src="/work/cragprints-cover.jpg" alt="CragPrints logo and wordmark beside a tee printed with El Capitan" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /><img src="/work/cragprints.jpg" alt="Natural CragPrints tee with a line drawing of El Capitan on the back" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /><img src="/work/cragprints-3.jpg" alt="Black CragPrints tee with a light line drawing of Half Dome on the back" loading="lazy" style="object-fit:contain;background:var(--bg-2)" /></div><button class="car-prev" type="button" aria-label="Previous photo">&#8249;</button><button class="car-next" type="button" aria-label="Next photo">&#8250;</button><span class="car-count"></span></div><div>
+      <p class="tag">Software</p><h3>CragPrints</h3>
+      <p>My solo climbing-apparel venture. Climbers have great appreciation for the rock formations their routes and problems are found on. CragPrints lets them wear their sends and honor the natural places where they find adventure. Every design is a detailed line drawing of a real rock formation - its cracks, ledges, and holds - printed on the back of a shirt, with the climb's coordinates on the front as a subtle nod to where it can be found.</p>
+      <details><summary>More</summary><p>There are two lines: Our Climbs, a curated collection of renowned boulders, routes, big walls, and peaks, and Your Send, where you upload a photo of your own project or objective and get it drawn in the same style, with multiple versions to choose from and fine-tune.</p><p>The whole store is one Astro app running on a Cloudflare Worker, and the store itself is the design builder. Our Climbs designs come out of a Python pipeline that turns reference photos into line art with an AI image model, then lays out print-ready files for each garment. Your Send runs the same idea live: the customer's photo is drawn by AI, and their own browser renders the print file, so the preview is exactly what gets printed.</p><p>Nothing is pre-made. At checkout, the product is created on the fly through Fourthwall's API, and Fourthwall handles payment, printing, and shipping. A small admin dashboard tracks orders and sales by channel, and lets me publish customers' designs into the collection.</p></details>
+      <a class="cta" href="https://cragprints.com/dg">Visit CragPrints</a></div></div>
+
+    </div>
+    <div class="sub">
+      <h3>Publications</h3>
+      <ul class="pubs">
+        <li><a href="https://drops.dagstuhl.de/entities/document/10.4230/OASIcs.SpaceCHI.2025.12">Conceptual Design, Manufacturing, and Assembly of a Tall Lunar Tower</a><span>OASIcs - Advancing Human-Computer Interaction for Space Exploration (SpaceCHI 2025) · Sep 21, 2025</span></li>
+        <li><a href="https://patents.google.com/patent/US12104393B2/en">Systems and Panels for Customized Retrofit of a Building Exterior</a><span>US Patent &amp; Trademark Office - US20230243168A1 · Aug 3, 2023</span></li>
+        <li><a href="https://congress.cimne.com/formandforce2019/frontal/doc/Ebook%20Form%20and%20Force%202019.pdf">Design and Manufacturing of the First Freeform 3D-Printed House</a><span>Proceedings of the IASS Annual Symposium 2019 - Structural Membranes 2019 · Aug 1, 2019</span></li>
+        <li><a href="https://pubmed.ncbi.nlm.nih.gov/29135942/">Morphological Transition in Diamond Thin-Films Induced by Boron in a Microwave Plasma Deposition Process</a><span>MDPI Materials · Nov 14, 2017</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+<div class="window" aria-hidden="true"></div>
+
+<!-- CAMP 3 -->
+<section class="page" id="camp-3" data-camp="2"><div class="page-inner">
+    <p class="campline">Upper glacier - 7,546 ft</p>
+    <h2>Adventure</h2>
+    <p>I love finding myself in "improbable places". Whether I'm 500-ft off the ground on a cliff ledge that only a handful of humans have ever stood on before, or in an off-the-beaten-path restaurant in a small town in a foreign country, these are the kinds of places and experiences that bring me joy.</p>
+    <CountryMap {...MAP} />
+    <div class="sub">
+      <h3>Travel</h3>
+      <p>I want to see and visit as much of the world as possible in this life. I'm no van-life nomad or jet-setting freelancer (at least not yet ;)). But hopefully this page is proof that you can hold down a full-time job in a home-base city and still get out there in the world.</p>
+      <p>14 countries and counting!</p>
+      <div class="reel" data-title="Travel"><div class="reel-track" aria-label="Travel photos"><img src="/adventure/travel-1.jpg" alt="Travel photo 1" loading="lazy" /><img src="/adventure/travel-2.jpg" alt="Travel photo 2" loading="lazy" /><img src="/adventure/travel-3.jpg" alt="Travel photo 3" loading="lazy" /><img src="/adventure/travel-4.jpg" alt="Travel photo 4" loading="lazy" /><img src="/adventure/travel-5.jpg" alt="Travel photo 5" loading="lazy" /><img src="/adventure/travel-6.jpg" alt="Travel photo 6" loading="lazy" /><img src="/adventure/travel-8.jpg" alt="Travel photo 7" loading="lazy" /><img src="/adventure/travel-9.jpg" alt="Travel photo 8" loading="lazy" /><img src="/adventure/travel-10.jpg" alt="Travel photo 9" loading="lazy" /><img src="/adventure/travel-11.jpg" alt="Travel photo 10" loading="lazy" /><img src="/adventure/travel-12.jpg" alt="Travel photo 11" loading="lazy" /><img src="/adventure/travel-13.jpg" alt="Travel photo 12" loading="lazy" /><img src="/adventure/travel-14.jpg" alt="Travel photo 13" loading="lazy" /></div><button class="reel-prev" type="button" aria-label="Scroll photos left">&#8249;</button><button class="reel-next" type="button" aria-label="Scroll photos right">&#8250;</button></div>
+    </div>
+    <div class="sub">
+      <h3>Climbing &amp; mountaineering</h3>
+      <p>Climbing has given me some of my favorite memories and adventures of my entire life. It's a great excuse to travel to parts of the world that others rarely visit, but which have a lot to offer the visitor. And there is no more improbable place than standing on a glaciated mountain summit or a tiny ledge halfway up a cliff.</p>
+      <p><a href="https://www.mountainproject.com/user/201008756/david-goodloe">Mountain Project &rarr;</a></p>
+      <div class="reel" data-title="Climbing and mountaineering"><div class="reel-track" aria-label="Climbing and mountaineering photos"><img src="/adventure/climbing-1.jpg" alt="Climbing and mountaineering photo 1" loading="lazy" /><img src="/adventure/climbing-2.jpg" alt="Climbing and mountaineering photo 2" loading="lazy" /><img src="/adventure/climbing-3.jpg" alt="Climbing and mountaineering photo 3" loading="lazy" /><img src="/adventure/climbing-5.jpg" alt="Climbing and mountaineering photo 4" loading="lazy" /><img src="/adventure/climbing-6.jpg" alt="Climbing and mountaineering photo 5" loading="lazy" /><img src="/adventure/climbing-7.jpg" alt="Climbing and mountaineering photo 6" loading="lazy" /><img src="/adventure/climbing-8.jpg" alt="Climbing and mountaineering photo 7" loading="lazy" /><img src="/adventure/climbing-9.jpg" alt="Climbing and mountaineering photo 8" loading="lazy" /><img src="/adventure/climbing-10.jpg" alt="Climbing and mountaineering photo 9" loading="lazy" /><img src="/adventure/climbing-11.jpg" alt="Climbing and mountaineering photo 10" loading="lazy" /><img src="/adventure/climbing-12.jpg" alt="Climbing and mountaineering photo 11" loading="lazy" /><img src="/adventure/climbing-13.jpg" alt="Climbing and mountaineering photo 12" loading="lazy" /><img src="/adventure/climbing-14.jpg" alt="Climbing and mountaineering photo 13" loading="lazy" /><img src="/adventure/climbing-15.jpg" alt="Climbing and mountaineering photo 14" loading="lazy" /><img src="/adventure/climbing-16.jpg" alt="Climbing and mountaineering photo 15" loading="lazy" /></div><button class="reel-prev" type="button" aria-label="Scroll photos left">&#8249;</button><button class="reel-next" type="button" aria-label="Scroll photos right">&#8250;</button></div>
+    </div>
+    <div class="sub">
+      <h3>Snowboarding</h3>
+      <p>I've often said that snowboarding is the most fun I've ever had on my own two feet. It's true, and if you've ever ridden, you know the feeling yourself. Living in the southeast US, I certainly don't get to snowboard as much as I get to do some of my other adventures, but we still make time for it. It's such an incredible way to move through mountainous terrain, even if the lift did the hard part for you (unless it didn't... see splitboarding!).</p>
+      <div class="reel" data-title="Snowboarding"><div class="reel-track" aria-label="Snowboarding photos"><img src="/adventure/snowboarding-3.jpg" alt="Snowboarding photo 1" loading="lazy" /><img src="/adventure/snowboarding-1.jpg" alt="Snowboarding photo 2" loading="lazy" /><img src="/adventure/snowboarding-6.jpg" alt="Snowboarding photo 3" loading="lazy" /><img src="/adventure/snowboarding-5.jpg" alt="Snowboarding photo 4" loading="lazy" /><img src="/adventure/snowboarding-14.jpg" alt="Snowboarding photo 5" loading="lazy" /><img src="/adventure/snowboarding-13.jpg" alt="Snowboarding photo 6" loading="lazy" /><img src="/adventure/snowboarding-10.jpg" alt="Snowboarding photo 7" loading="lazy" /><img src="/adventure/snowboarding-16.jpg" alt="Snowboarding photo 8" loading="lazy" /></div><button class="reel-prev" type="button" aria-label="Scroll photos left">&#8249;</button><button class="reel-next" type="button" aria-label="Scroll photos right">&#8250;</button></div>
+    </div>
+  </div>
+</section>
+<div class="window" aria-hidden="true"></div>
+
+<!-- CAMP 4 -->
+<section class="page" id="camp-4" data-camp="3"><div class="page-inner">
+    <p class="campline">Southeast Ridge - 8,048 ft</p>
+    <h2>Learning</h2>
+    <p>I'm always studying business, finance, and investing as a continuation of my MBA. But currently focused on learning and implementing AI, as well as some of the disciplines of software development - like DevOps, Kubernetes, cloud, and Linux - that will continue to form the digital infrastructure of the AI age to come.</p>
+    <div class="sub">
+      <h3>Courses</h3>
+      <div class="certs">{CERTS.map((c) => <a href={c.url}><img src={c.image} alt="" loading="lazy" />{c.label}</a>)}</div>
+    </div>
+    <div class="sub">
+      <h3>Reading <span class="muted" style="font-weight:400;font-size:.9rem">(<a href="https://www.goodreads.com/user/show/203579059-david-goodloe"><em>follow me on Goodreads</em></a>)</span></h3>
+      <div class="reading">
+      <div class="reading-row" aria-label={`Books read in ${ROW_YEAR}`}>{ROW.map((b) => <a class="book" href={b.url} title={bookTitle(b)}><img src={b.cover} alt={bookAlt(b)} loading="lazy" /></a>)}</div>
+      <details class="shelf"><summary>The full shelf</summary>
+      <div class="reading-shelf">{SHELF.map((g) => <section class="book-year-group"><h4 class="book-year">{g.year}</h4><ul class="book-grid" aria-label={`Books read in ${g.year}`}>{g.books.map((b) => <li><a class="book" href={b.url} title={bookTitle(b)}><img src={b.cover} alt={bookAlt(b)} loading="lazy" /></a></li>)}</ul></section>)}</div>
+      </details>
       </div>
     </div>
-  </section>
+  </div>
+</section>
+<div class="window" aria-hidden="true"></div>
 
-  <section class="currently">
-    <h2>Currently</h2>
-    <ul class="currently-list">
-      <li><span class="c-label">Working</span> - at <a href="https://branchtechnology.com/" target="_blank" rel="noopener noreferrer">Branch Technology</a></li>
-      <li><span class="c-label">Learning</span> - <a href="https://kodekloud.com/learning-path/kubernetes" target="_blank" rel="noopener noreferrer">Agentic AI, DevOps, K8s</a></li>
-      <li><span class="c-label">Building</span> - <a href="https://southernalpinist.com/" target="_blank" rel="noopener noreferrer">Southern Alpinist</a></li>
-      {
-        readingNow.length > 0 && (
-          <li>
-            <span class="c-label">Reading</span> -{' '}
-            {readingNow.map((b, i) => (
-              <>
-                {i > 0 && ', '}
-                <a href={b.url} target="_blank" rel="noopener noreferrer">{b.title}</a>
-              </>
-            ))}
-          </li>
-        )
-      }
-      <li><span class="c-label">Competing</span> - <a href="https://app.utrsports.net/events/386332" target="_blank" rel="noopener noreferrer">Chattanooga UTR Flex League</a></li>
-      <li><span class="c-label">Climbing</span> - <a href="https://www.mountainproject.com/route/113873272/dalai-lama" target="_blank" rel="noopener noreferrer">Dalai Lama, 5.12c</a></li>
-    </ul>
-  </section>
+<!-- CAMP 5 -->
+<section class="page" id="camp-5" data-camp="4"><div class="page-inner">
+    <p class="campline">Summit - 9,131 ft</p>
+    <div class="summit"><div>
+    <h2>Contact</h2>
+    <p>I'd love to hear from you if you've made it this far. Please reach out below!</p>
+    <form class="contact-form" method="POST" action="/api/contact" data-success="Thanks, I'll be in touch.">
+      <div class="hp" aria-hidden="true"><label>Leave this field empty<input type="text" name="botcheck" tabindex="-1" autocomplete="off" /></label></div>
+      <label>Name<input name="name" autocomplete="name" required /></label>
+      <label>Email<input name="email" type="email" autocomplete="email" required /></label>
+      <label>Message<textarea name="message" rows="5" required></textarea></label>
+      <button class="send" type="submit">Send message</button>
+      <p class="form-status" role="status" aria-live="polite" hidden></p>
+    </form>
+    </div><div>
+    <div>
+      <h2>About</h2>
+      <p>For the last ~10 years, I've worked at Branch Technology. I'm currently the Director of our business unit focused on digitally-manufactured energy retrofits, and I've also cut my teeth on federally funded research and technology projects across many domains. I love building technology businesses, exploring product-market-fit, and being on a team pursuing a common goal. If you'd like to check out my resume, too, it's available <a href="/david-goodloe-resume.pdf">here</a>.</p>
+    </div>
+    <div class="sub">
+      <h3>My Personal &amp; Vocational Values</h3>
+      <p>My faith in the saving work of Jesus in my life informs all that I am and do, so I thought I'd spend just a few lines here too on my personal and vocational values. Would love to chat about any of these if you find them interesting.</p>
+      <ol class="values">
+        <li><span>Work is inherently good and is how God most clearly empowers us to participate in his redemptive plan for the world. So I want to do excellent work with an ownership mentality.</span></li>
+        <li><span>The skills I've been given to aid in my work are gifts that I must steward well, for their highest and best use. This means both deploying them well and continuing to develop them.</span></li>
+        <li><span>Humans are made for community, and will flourish when our relationships are thriving. As a venue for pursuing something bigger than ourselves in community, the workplace can be simultaneously both a cause and beneficiary of this flourishing.</span></li>
+      </ol>
+      <blockquote>Hebrews 12:2 - "[So now, let us] Fix our eyes upon Jesus, the founder and perfecter of our faith, who for the joy that was set before Him, endured the cross and despised the shame, and was seated at the right hand of God."</blockquote>
+    </div>
+    <div class="sub">
+      <h3>About this site</h3>
+      <p class="muted" style="font-size:.92rem">Built with Claude Code, Astro, and vanilla JS. Uses a custom 3D canvas renderer over real elevation data with a shortest-path algorithm. Hosted on Cloudflare Pages, with a serverless contact form (via Resend), scheduled GitHub Actions rebuilds, and cookieless analytics.</p>
+    </div>
+    </div></div>
+  </div>
+</section>
+</div>
+</main>
 
-  <section class="find-me">
-    <h2>Where you can find me</h2>
-    <ul class="social">
-      <li>
-        <a href="https://www.linkedin.com/in/david--goodloe/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="LinkedIn"><span class="ico ico-linkedin"></span></a>
-      </li>
-      <li>
-        <a href="https://github.com/davidgoodloe" target="_blank" rel="noopener noreferrer" aria-label="GitHub" title="GitHub"><span class="ico ico-github"></span></a>
-      </li>
-      <li>
-        <a href="https://www.goodreads.com/user/show/203579059-david-goodloe" target="_blank" rel="noopener noreferrer" aria-label="Goodreads" title="Goodreads"><span class="ico ico-goodreads"></span></a>
-      </li>
-      <li>
-        <a href="https://southernalpinist.com/" target="_blank" rel="noopener noreferrer" aria-label="Southern Alpinist" title="Southern Alpinist"><span class="ico ico-sa"></span></a>
-      </li>
-      <li>
-        <a href="https://www.mountainproject.com/user/201008756/david-goodloe" target="_blank" rel="noopener noreferrer" aria-label="Mountain Project" title="Mountain Project"><img class="ico-img" src="/icons/mountainproject.png" alt="" width="22" height="22" /></a>
-      </li>
-      <li>
-        <a href="https://www.8a.nu/user/david-goodloe/sportclimbing" target="_blank" rel="noopener noreferrer" aria-label="8a.nu" title="8a.nu"><img class="ico-img" src="/icons/8anu.png" alt="" height="22" /></a>
-      </li>
-      <li>
-        <a href="https://app.utrsports.net/profiles/120574" target="_blank" rel="noopener noreferrer" aria-label="UTR" title="UTR"><span class="ico ico-utr"></span></a>
-      </li>
-    </ul>
-    <p class="email-link"><a href="/about#contact">Email</a></p>
-    <p class="resume-link"><a href="/david-goodloe-resume.pdf" target="_blank" rel="noopener noreferrer">Resume</a></p>
-  </section>
-</BaseLayout>
+<footer><div class="wrap">
+  <span>&copy; {YEAR} David Goodloe</span><span><a href="#top">Back to the trailhead ↑</a></span>
+</div></footer>
 
-<style>
-  .bio-lead {
-    font-size: 1.2rem;
-    line-height: 1.55;
-    margin-top: 0;
-  }
-  .currently-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .currently-list li {
-    margin: 0.4rem 0;
-  }
-  .c-label {
-    font-weight: 600;
-    color: var(--fg);
-  }
-  .social {
-    list-style: none;
-    padding: 0;
-    margin: 0.25rem 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1.1rem;
-  }
-  .social a {
-    display: inline-flex;
-    align-items: center;
-    color: var(--muted);
-  }
-  .social a:hover {
-    color: var(--fg);
-    text-decoration: none;
-  }
-  .social .ico {
-    display: inline-block;
-    width: 22px;
-    height: 22px;
-    background-color: currentColor;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-    -webkit-mask-position: center;
-    mask-position: center;
-    -webkit-mask-size: contain;
-    mask-size: contain;
-  }
-  .ico-linkedin {
-    -webkit-mask-image: url(/icons/linkedin.svg);
-    mask-image: url(/icons/linkedin.svg);
-  }
-  .ico-github {
-    -webkit-mask-image: url(/icons/github.svg);
-    mask-image: url(/icons/github.svg);
-  }
-  .ico-goodreads {
-    -webkit-mask-image: url(/icons/goodreads.svg);
-    mask-image: url(/icons/goodreads.svg);
-  }
-  .ico-utr {
-    -webkit-mask-image: url(/icons/utr.svg);
-    mask-image: url(/icons/utr.svg);
-  }
-  .ico-sa {
-    -webkit-mask-image: url(/icons/southern-alpinist.png);
-    mask-image: url(/icons/southern-alpinist.png);
-    width: 26px;
-  }
-  .social .ico-img {
-    height: 22px;
-    width: auto;
-    border-radius: 4px;
-    display: block;
-  }
-  .social .text-link {
-    font-size: 0.95rem;
-  }
-  .email-link {
-    margin-top: 1.25rem;
-    margin-bottom: 0;
-  }
-  .resume-link {
-    margin: 0.4rem 0 0;
-  }
-</style>
+<dialog id="lightbox" aria-label="Photo viewer">
+  <figure><img src="" alt="" /><figcaption><span class="lb-cap"></span><span class="lb-count"></span></figcaption></figure>
+  <button class="lb-prev" type="button" aria-label="Previous photo">&#8249;</button>
+  <button class="lb-next" type="button" aria-label="Next photo">&#8250;</button>
+  <button class="lb-close" type="button" aria-label="Close">&#10005;</button>
+</dialog>
+<p class="hud" id="hud" aria-hidden="true"><b id="hud-camp">Trailhead</b> - <span class="m" id="hud-m">3,990 ft</span></p>
+
+<script is:inline src="/js/terrain-data.js?v=6"></script>
+<script is:inline src="/js/journey3d.js?v=7"></script>
+<script is:inline src="/js/gallery.js?v=1"></script>
+<script is:inline>
+  // highlight the stop you're reading in the left rail
+  const links = [...document.querySelectorAll('.rail li')];
+  document.querySelectorAll('[data-camp]').forEach((sec, i) => new IntersectionObserver(([e]) => {
+    if (e.isIntersecting) links.forEach((l, j) => { l.classList.toggle('on', j === i); l.classList.toggle('done', j < i); });
+  }, { rootMargin: '-40% 0px -55% 0px' }).observe(sec));
+</script>
+<script is:inline>
+  // Contact form: posts to the Cloudflare Pages Function (functions/api/contact.js), which
+  // emails via Resend. Works without JS as a plain POST; this shows the result inline.
+  (function () {
+    const form = document.querySelector('.contact-form');
+    if (!form) return;
+    const status = form.querySelector('.form-status'), button = form.querySelector('button[type="submit"]');
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      status.hidden = true; button.disabled = true;
+      try {
+        const res = await fetch(form.action, { method: 'POST', headers: { Accept: 'application/json' }, body: new FormData(form) });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) { form.reset(); status.textContent = form.dataset.success; status.className = 'form-status ok'; }
+        else { status.textContent = data.error || 'Something went wrong. Please try again.'; status.className = 'form-status err'; }
+      } catch (_) {
+        status.textContent = 'Something went wrong. Please try again.'; status.className = 'form-status err';
+      } finally { status.hidden = false; button.disabled = false; }
+    });
+  })();
+</script>
+
+</Shell>

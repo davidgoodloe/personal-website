@@ -1,0 +1,9 @@
+# The site is one page now: old page URLs land on their stop up the mountain.
+/work        /#camp-2  301
+/work/       /#camp-2  301
+/adventure   /#camp-3  301
+/adventure/  /#camp-3  301
+/learning    /#camp-4  301
+/learning/   /#camp-4  301
+/about       /#camp-5  301
+/about/      /#camp-5  301

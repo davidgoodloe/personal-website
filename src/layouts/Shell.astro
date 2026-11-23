@@ -1,0 +1,105 @@
+---
+// Document shell: <head> (SEO, social cards, structured data, fonts) around a page.
+// The site is one dark page (index.astro) plus the 404.
+import '../styles/journey.css';
+import editmodeSrc from '../scripts/editmode.js?raw';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Path (relative to the site) of the social share image. */
+  ogImage?: string;
+}
+
+const {
+  title = 'David Goodloe',
+  description,
+  ogImage = '/og-image.jpg',
+} = Astro.props;
+
+// Site-wide default description (David's own words, carried over from the live site).
+const DEFAULT_DESCRIPTION =
+  'David Goodloe - working across technology, science, energy, sustainability, defense-tech, ' +
+  'construction, space, software, and AI. Rock climber, mountaineer, snowboarder, ' +
+  'reader, and traveler.';
+const metaDescription = description ?? DEFAULT_DESCRIPTION;
+
+const canonicalURL = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : Astro.url.href;
+const ogImageURL = Astro.site ? new URL(ogImage, Astro.site).href : ogImage;
+
+// --- Structured data (JSON-LD) for search + AI answer engines ---
+const siteUrl = Astro.site?.href.replace(/\/$/, '') ?? 'https://davidgoodloe.ai';
+const personSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'David Goodloe',
+  url: siteUrl + '/',
+  image: ogImageURL,
+  jobTitle: 'Director, BranchRegenerate™ Business Unit',
+  worksFor: {
+    '@type': 'Organization',
+    name: 'Branch Technology',
+    url: 'https://www.branch.technology',
+  },
+  homeLocation: { '@type': 'Place', name: 'Chattanooga, Tennessee' },
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'Vanderbilt University' },
+  knowsAbout: ['Artificial Intelligence', 'Software Development', 'DevOps', 'Sustainability'],
+  sameAs: [
+    'https://www.linkedin.com/in/david--goodloe/',
+    'https://x.com/davidrgoodloe',
+    'https://www.instagram.com/drgoodloe/',
+    'https://github.com/davidgoodloe',
+    'https://www.goodreads.com/user/show/203579059-david-goodloe',
+  ],
+};
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'David Goodloe',
+  url: siteUrl + '/',
+};
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#101215" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;600&display=swap"
+    />
+    <title>{title}</title>
+    <meta name="description" content={metaDescription} />
+    <link rel="canonical" href={canonicalURL} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="David Goodloe" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={metaDescription} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:image" content={ogImageURL} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="David Goodloe - davidgoodloe.ai" />
+    <meta property="og:locale" content="en_US" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={metaDescription} />
+    <meta name="twitter:image" content={ogImageURL} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
+  </head>
+  <body>
+    <slot />
+    {/* In-place copy editor: `npm run dev` only, never in the built site. */}
+    {import.meta.env.DEV && <script is:inline set:html={editmodeSrc} />}
+  </body>
+</html>
