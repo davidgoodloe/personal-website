@@ -91,7 +91,8 @@ footer a { color: var(--muted); }
     .page { background: var(--bg); min-height: auto; padding: 56px 20px 64px; }
     .window { display: block; height: 55vh; }
     .rail { display: none; }
-    .hud { left: 12px; bottom: 12px; }
+    /* sits under the pages, so it shows only where the mountain does (the gaps between pages) */
+    .hud { left: 12px; bottom: 12px; z-index: 0; }
   }
 
   .campline { font: 600 1rem 'IBM Plex Sans Condensed', sans-serif; color: var(--accent); letter-spacing: .01em; margin: 0 0 14px; }
