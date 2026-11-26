@@ -1,6 +1,6 @@
 // The climb: the printed 3D model stays pinned behind the page, and scrolling moves the camera
-// up David's route (trailhead -> lower and upper glacier -> southeast ridge -> summit). It parks at each
-// camp while that camp's content scrolls past, then follows the gold line to the next one.
+// up David's route (trailhead -> lower and upper glacier -> southeast ridge -> summit). The line keeps
+// climbing the whole time you scroll, easing a little as it nears each camp so the stops still register.
 // Scrolling is completely native - the 3D scene just reads the scroll position.
 (function () {
   const T = window.TERRAIN;
@@ -26,6 +26,11 @@
     { i: idxAt(2453), label: 'Southeast Ridge' },
     { i: N, label: 'Summit' },
   ].map((c) => ({ ...c, u: c.i / N }));
+  // "at" a camp = within a fifth of the way to its nearest neighbour (labels, HUD)
+  CAMPS.forEach((c, k) => {
+    const gaps = [CAMPS[k - 1], CAMPS[k + 1]].filter(Boolean).map((o) => Math.abs(o.u - c.u));
+    c.win = 0.2 * Math.min(...gaps);
+  });
   window.CAMPS = CAMPS;
 
   const pointAt = (u) => {
@@ -34,26 +39,38 @@
   };
 
   const canvas = document.getElementById('terrain');
-  const ctx = canvas.getContext('2d');
-  let cw = 0, ch = 0, colors = null;
+  // opaque canvas: the compositor doesn't have to blend a full-screen layer every frame
+  const ctx = canvas.getContext('2d', { alpha: false });
+  let cw = 0, ch = 0, colors = null, dirty = true;
+  // Drawing ~40 filled contour layers is GPU work whose cost grows with canvas pixels (and is much
+  // heavier in some browsers, e.g. Chrome on Windows on a big external monitor). Cap the backing
+  // store, and drop resolution further - even below 1x - if this machine keeps dropping frames.
+  const PX_CAP = 5e6;
+  let quality = 1;
   function readColors() {
     const s = getComputedStyle(document.documentElement);
     const trip = (n) => s.getPropertyValue(n).trim().split(',').map(Number);
     colors = { f0: trip('--t-fill0'), f1: trip('--t-fill1'), line: s.getPropertyValue('--t-line').trim(),
       idx: s.getPropertyValue('--t-index').trim(), accent: (s.getPropertyValue('--route') || s.getPropertyValue('--accent')).trim(),
       fg: s.getPropertyValue('--fg').trim(), muted: s.getPropertyValue('--muted').trim(), bg: (s.getPropertyValue('--table') || s.getPropertyValue('--bg')).trim() };
+    for (const L of layers) { const f = colors.f0.map((c, i) => Math.round(c + (colors.f1[i] - c) * L.z)); L.fill = `rgb(${f[0]},${f[1]},${f[2]})`; }
+    dirty = true;
   }
   function resize() {
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
     cw = innerWidth; ch = innerHeight;
+    const dev = window.devicePixelRatio || 1;
+    // never softer than half the screen's density (so a retina Mac stays at >= 1x), or 0.6x overall
+    const dpr = Math.max(0.6, Math.min(1, dev * 0.5), Math.min(2, dev, Math.sqrt(PX_CAP / (cw * ch))) * quality);
     canvas.width = Math.round(cw * dpr); canvas.height = Math.round(ch * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     measure();
+    dirty = true;
   }
 
   function render(st) {
     const { yaw, pitch, printH, zoom, target, ax, ay, u, routeIn } = st;
-    ctx.clearRect(0, 0, cw, ch);
+    ctx.fillStyle = colors.bg; ctx.fillRect(0, 0, cw, ch);
+    ctx.lineJoin = 'bevel'; ctx.lineCap = 'butt'; // cheapest joins for the many-vertex contour strokes
     const wide = cw > 900;
     const cx = cw * ax, cy = ch * ay;
     const dist = 3.6, scale = Math.min(cw * (wide ? 0.3 : 0.44), ch * 0.5) * dist * zoom;
@@ -87,13 +104,12 @@
         }
         break;
       }
-      const f = colors.f0.map((c, i) => Math.round(c + (colors.f1[i] - c) * L.z));
       ctx.beginPath();
       for (const ring of L.rings) {
         for (let k = 0; k < ring.length; k += 2) { proj(ring[k], ring[k + 1], L.z); k === 0 ? ctx.moveTo(p[0], p[1]) : ctx.lineTo(p[0], p[1]); }
         ctx.closePath();
       }
-      ctx.fillStyle = `rgb(${f[0]},${f[1]},${f[2]})`; ctx.fill('evenodd');
+      ctx.fillStyle = L.fill; ctx.fill('evenodd');
       ctx.strokeStyle = L.index ? colors.idx : colors.line; ctx.lineWidth = L.index ? 1.1 : 0.7; ctx.stroke();
       prevZ = L.z;
     }
@@ -114,7 +130,7 @@
     ctx.font = '600 13px "IBM Plex Sans Condensed", "IBM Plex Sans", sans-serif'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
     CAMPS.forEach((c, k) => {
       proj(route[c.i][0], route[c.i][1], route[c.i][2]);
-      const here = Math.abs(u - c.u) < 0.004, passed = u >= c.u - 0.004;
+      const here = Math.abs(u - c.u) < c.win, passed = u >= c.u - 0.004;
       ctx.beginPath(); ctx.arc(p[0], p[1], here ? 6 : 4.5, 0, 7);
       ctx.fillStyle = passed ? colors.accent : colors.bg; ctx.fill();
       ctx.strokeStyle = colors.accent; ctx.lineWidth = 1.5; ctx.stroke();
@@ -132,30 +148,31 @@
   }
 
   // ---- scroll -> journey position ----
-  // Each camp section parks the camera at its camp; the gaps between them move it up the line.
+  // Each camp section has an arrival point; between two arrivals the climber moves steadily up the
+  // line, slowing a little near each camp (PULL) so the stops feel like stops without ever freezing.
+  const PULL = 0.55; // 0 = even pace all the way, 1 = comes to a full stop at every camp
   let marks = [];
   function measure() {
-    const vh = innerHeight;
-    const secs = [...document.querySelectorAll('[data-camp]')];
-    const tops = secs.map((el) => el.getBoundingClientRect().top + scrollY);
-    marks = secs.map((el, m) => {
-      const arrive = tops[m] - vh * 0.25;
-      // park until the next page is about to arrive, then travel during the hand-off
-      const leave = m < secs.length - 1 ? Math.max(arrive, tops[m + 1] - vh * 0.7) : Infinity;
-      return { arrive, leave, k: +el.dataset.camp };
-    });
+    const vh = innerHeight, maxY = document.documentElement.scrollHeight - vh;
+    marks = [...document.querySelectorAll('[data-camp]')].map((el) => ({
+      at: Math.max(0, Math.min(maxY, el.getBoundingClientRect().top + scrollY - vh * 0.25)), // last one must be reachable
+      k: +el.dataset.camp,
+    }));
+    dirty = true;
   }
   const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / ((b - a) || 1))); return t * t * (3 - 2 * t); };
+  const glide = (t) => (1 - PULL) * t + PULL * t * t * (3 - 2 * t);
   function journey(y) {
-    if (!marks.length) return { u: 0, z: 0, k: -1 };
-    const first = marks[0];
-    if (y < first.arrive) return { u: 0, z: smooth(innerHeight * 0.15, first.arrive, y), k: -1 };
-    for (let m = 0; m < marks.length; m++) {
+    if (!marks.length) return { u: 0, z: 0 };
+    if (y < marks[0].at) return { u: 0, z: smooth(innerHeight * 0.15, marks[0].at, y) };
+    for (let m = 0; m < marks.length - 1; m++) {
       const c = marks[m], next = marks[m + 1];
-      if (y <= c.leave) return { u: CAMPS[c.k].u, z: 1, k: c.k };
-      if (next && y < next.arrive) return { u: CAMPS[c.k].u + (CAMPS[next.k].u - CAMPS[c.k].u) * smooth(c.leave, next.arrive, y), z: 1, k: c.k + 0.5 };
+      if (y < next.at) {
+        const t = (y - c.at) / ((next.at - c.at) || 1);
+        return { u: CAMPS[c.k].u + (CAMPS[next.k].u - CAMPS[c.k].u) * glide(t), z: 1 };
+      }
     }
-    return { u: 1, z: 1, k: CAMPS.length - 1 };
+    return { u: CAMPS[marks[marks.length - 1].k].u, z: 1 };
   }
 
   // ---- drag to orbit (hero and the open model areas) ----
@@ -175,36 +192,66 @@
   const ease = (x) => 1 - Math.pow(1 - Math.min(1, Math.max(0, x)), 3);
   const easeIO = (x) => { x = Math.min(1, Math.max(0, x)); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
   const hud = document.getElementById('hud'), hudCamp = document.getElementById('hud-camp'), hudM = document.getElementById('hud-m');
-  let uS = 0, zS = 0, t0 = performance.now(), last = t0, spin = 0;
+  let uS = 0, zS = 0, clock = 0, born = performance.now(), last = born, spin = 0, prevKey = '', zOut = '', hudText = '', hudOp = '';
+  // Frame watchdog: if this machine keeps dropping frames (intervals well over the display's own
+  // frame time) for two windows running, step the resolution down. A steady capped rate (30Hz
+  // low-power mode) isn't a drop, and a one-off hitch (tab switch, GC) doesn't count.
+  let win = [], strikes = 0;
+  const watch = (interval) => {
+    if (document.hidden || clock < 0.5 || interval > 250) return;
+    win.push(interval);
+    if (win.length < 30) return;
+    const base = Math.min(...win), dropped = win.filter((v) => v > base * 1.6).length;
+    strikes = dropped > 8 ? strikes + 1 : 0;
+    if (strikes >= 2 && quality > 0.45) { quality *= 0.75; strikes = 0; resize(); }
+    win = [];
+  };
+  const setText = (el, v, prev) => { if (v !== prev) el.textContent = v; return v; };
+  let hudCampText = '';
   function frame(now) {
-    const dt = Math.min(0.5, (now - last) / 1000); last = now; // real elapsed time, so slow frames still catch up
-    const t = reduce ? 99 : (now - t0) / 1000;
+    const raw = (now - last) / 1000; last = now;
+    const dt = Math.min(0.1, raw);
+    // The intro runs on its own clock that never jumps more than a 30fps frame, so a stall
+    // (page still loading, slow GPU) slows the print down instead of skipping ahead.
+    // ...and it waits for the page to finish loading (up to ~1.2s) so the print doesn't compete with it.
+    if (document.readyState === 'complete' || now - born > 1200) clock += Math.min(dt, 1 / 30);
+    const t = reduce ? 99 : clock;
     const j = journey(scrollY);
     const a = reduce ? 1 : 1 - Math.exp(-dt * 5);
     uS += (j.u - uS) * a; zS += (j.z - zS) * a;
-    if (!dragging) { yawOff += vel * dt; vel *= Math.exp(-dt * 2.2); }
+    if (Math.abs(j.u - uS) < 1e-5) uS = j.u;
+    if (Math.abs(j.z - zS) < 1e-4) zS = j.z;
+    if (!dragging) { yawOff += vel * dt; vel *= Math.exp(-dt * 2.2); if (Math.abs(vel) < 1e-4) vel = 0; }
     spin += (reduce ? 0 : 0.05) * (1 - zS) * dt;       // slow spin only while you're on the overview
     const wide = innerWidth > 900, k = ease(t / 3.2);
     const me = pointAt(uS);
-    const target = [lerp(0, me[0], zS), lerp(0, me[1], zS), lerp(0, me[2], zS)];
-    render({
+    const st = {
       yaw: YAW0 - (1 - k) * 0.5 + spin + yawOff + zS * uS * 0.9,
       pitch: Math.min(1.35, Math.max(0.2, 0.52 + (1 - k) * 0.3 + zS * 0.22 + pitchOff)),
       printH: easeIO((t - 0.3) / 4.2),
       zoom: (0.94 + 0.06 * k) * lerp(1, wide ? 2.1 : 2.4, zS),
-      target,
+      target: [lerp(0, me[0], zS), lerp(0, me[1], zS), lerp(0, me[2], zS)],
       ax: wide ? lerp(0.68, 0.19, zS) : 0.5,
       ay: wide ? lerp(0.44, 0.56, zS) : lerp(0.36, 0.4, zS),
       u: uS,
       routeIn: easeIO((t - 1.2) / 4.6),
-    });
-    document.documentElement.style.setProperty('--z', zS.toFixed(3));
+    };
+    // only redraw when the picture would actually change (parked mid-page = no GPU work at all)
+    const key = [st.yaw, st.pitch, st.printH, st.zoom, st.ax, st.ay, st.u, st.routeIn, ...st.target].map((v) => v.toFixed(5)).join();
+    if (dirty || key !== prevKey) {
+      render(st);
+      if (!dirty && prevKey) watch(raw * 1000);
+      prevKey = key; dirty = false;
+    }
+    const z = zS.toFixed(3);
+    if (z !== zOut) { document.documentElement.style.setProperty('--z', z); zOut = z; }
     if (hud) {
       const m = Math.round(metres(me[2]));
       const near = CAMPS.reduce((b, c) => (Math.abs(c.u - uS) < Math.abs(b.u - uS) ? c : b));
-      hudCamp.textContent = Math.abs(near.u - uS) < 0.01 ? near.label : `Climbing to the ${(CAMPS.find((c) => c.u > uS + 0.005)?.label || 'summit').toLowerCase()}`;
-      hudM.textContent = (uS > 0.995 ? '9,131' : Math.round(m * 3.28084).toLocaleString()) + ' ft';
-      hud.style.opacity = zS > 0.5 ? 1 : 0;
+      hudCampText = setText(hudCamp, Math.abs(near.u - uS) < near.win ? near.label : `Climbing to the ${(CAMPS.find((c) => c.u > uS + 0.005)?.label || 'summit').toLowerCase()}`, hudCampText);
+      hudText = setText(hudM, (uS > 0.995 ? '9,131' : Math.round(m * 3.28084).toLocaleString()) + ' ft', hudText);
+      const op = zS > 0.5 ? '1' : '0';
+      if (op !== hudOp) { hud.style.opacity = op; hudOp = op; }
     }
     requestAnimationFrame(frame);
   }
